@@ -1,6 +1,6 @@
 namespace java org.example.internal
 
-struct InternalLeadTO {
+struct InternalLeadDTO {
   1: string firstName,
   2: string lastName,
   3: double annualRevenue,
@@ -15,8 +15,8 @@ struct InternalLeadTO {
 }
 
 service InternalCRM {
-  list<InternalLeadTO> findLeads(1: double lowAnnualRevenue, 2: double highAnnualRevenue, 3: string state),
-  list<InternalLeadTO> findLeadsByDate(1: string startDate, 2: string endDate),
-  i64 createLead(1: InternalLeadTO lead),
-  void deleteLead(1: InternalLeadTO leadDto)
+  list<InternalLeadDTO> findLeads(1: double lowAnnualRevenue, 2: double highAnnualRevenue, 3: string state),
+  list<InternalLeadDTO> findLeadsByDate(1: string startDate, 2: string endDate),
+  i64 createLead(1: InternalLeadDTO lead),
+  void deleteLead(1: InternalLeadDTO leadDto)
 }
