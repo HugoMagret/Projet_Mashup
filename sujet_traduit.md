@@ -1,6 +1,6 @@
 # Projet : Mashup (Architecture distribuée)
 
-|------------------------------------------------------|
+
 |  LE PDF DU RPOF CONTIENT DES SHEMAS SUPPLEMENTAIRES  |
 |------------------------------------------------------|
 
