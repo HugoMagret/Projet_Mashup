@@ -1,6 +1,6 @@
 📥 Cloner le dépôt
 # SSH (préférable si ta clé est configurée)
-sudp git clone git@github.com:HugoMagret/Projet_Mashup.git
+sudo git clone git@github.com:HugoMagret/Projet_Mashup.git
 
 # HTTPS
 git clone https://github.com/HugoMagret/Projet_Mashup.git
