@@ -1,3 +1,5 @@
-rootProject.name = 'mashup'
-include("client", "virtualcrm", "internalcrm")
+rootProject.name = 'Projet_Mashup'
 
+include 'Client'
+include 'virtualCRM'
+include 'internalCRM'
