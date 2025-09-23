@@ -12,25 +12,25 @@ public class InternalCRM {
 
   public interface Iface {
 
-    public java.util.List<InternalLeadTO> findLeads(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String province) throws org.apache.thrift.TException;
+    public java.util.List<InternalLeadTO> findLeads(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String state) throws org.apache.thrift.TException;
 
-    public java.util.List<InternalLeadTO> findLeadsByDate(java.lang.String fromIso, java.lang.String toIso) throws org.apache.thrift.TException;
+    public java.util.List<InternalLeadTO> findLeadsByDate(java.lang.String startDate, java.lang.String endDate) throws org.apache.thrift.TException;
 
     public long createLead(InternalLeadTO lead) throws org.apache.thrift.TException;
 
-    public void deleteLead(long id) throws org.apache.thrift.TException;
+    public void deleteLead(InternalLeadTO leadDto) throws org.apache.thrift.TException;
 
   }
 
   public interface AsyncIface {
 
-    public void findLeads(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String province, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler) throws org.apache.thrift.TException;
+    public void findLeads(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String state, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler) throws org.apache.thrift.TException;
 
-    public void findLeadsByDate(java.lang.String fromIso, java.lang.String toIso, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler) throws org.apache.thrift.TException;
+    public void findLeadsByDate(java.lang.String startDate, java.lang.String endDate, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler) throws org.apache.thrift.TException;
 
     public void createLead(InternalLeadTO lead, org.apache.thrift.async.AsyncMethodCallback<java.lang.Long> resultHandler) throws org.apache.thrift.TException;
 
-    public void deleteLead(long id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+    public void deleteLead(InternalLeadTO leadDto, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -57,18 +57,18 @@ public class InternalCRM {
     }
 
     @Override
-    public java.util.List<InternalLeadTO> findLeads(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String province) throws org.apache.thrift.TException
+    public java.util.List<InternalLeadTO> findLeads(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String state) throws org.apache.thrift.TException
     {
-      send_findLeads(lowAnnualRevenue, highAnnualRevenue, province);
+      send_findLeads(lowAnnualRevenue, highAnnualRevenue, state);
       return recv_findLeads();
     }
 
-    public void send_findLeads(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String province) throws org.apache.thrift.TException
+    public void send_findLeads(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String state) throws org.apache.thrift.TException
     {
       findLeads_args args = new findLeads_args();
       args.setLowAnnualRevenue(lowAnnualRevenue);
       args.setHighAnnualRevenue(highAnnualRevenue);
-      args.setProvince(province);
+      args.setState(state);
       sendBase("findLeads", args);
     }
 
@@ -83,17 +83,17 @@ public class InternalCRM {
     }
 
     @Override
-    public java.util.List<InternalLeadTO> findLeadsByDate(java.lang.String fromIso, java.lang.String toIso) throws org.apache.thrift.TException
+    public java.util.List<InternalLeadTO> findLeadsByDate(java.lang.String startDate, java.lang.String endDate) throws org.apache.thrift.TException
     {
-      send_findLeadsByDate(fromIso, toIso);
+      send_findLeadsByDate(startDate, endDate);
       return recv_findLeadsByDate();
     }
 
-    public void send_findLeadsByDate(java.lang.String fromIso, java.lang.String toIso) throws org.apache.thrift.TException
+    public void send_findLeadsByDate(java.lang.String startDate, java.lang.String endDate) throws org.apache.thrift.TException
     {
       findLeadsByDate_args args = new findLeadsByDate_args();
-      args.setFromIso(fromIso);
-      args.setToIso(toIso);
+      args.setStartDate(startDate);
+      args.setEndDate(endDate);
       sendBase("findLeadsByDate", args);
     }
 
@@ -132,16 +132,16 @@ public class InternalCRM {
     }
 
     @Override
-    public void deleteLead(long id) throws org.apache.thrift.TException
+    public void deleteLead(InternalLeadTO leadDto) throws org.apache.thrift.TException
     {
-      send_deleteLead(id);
+      send_deleteLead(leadDto);
       recv_deleteLead();
     }
 
-    public void send_deleteLead(long id) throws org.apache.thrift.TException
+    public void send_deleteLead(InternalLeadTO leadDto) throws org.apache.thrift.TException
     {
       deleteLead_args args = new deleteLead_args();
-      args.setId(id);
+      args.setLeadDto(leadDto);
       sendBase("deleteLead", args);
     }
 
@@ -172,9 +172,9 @@ public class InternalCRM {
     }
 
     @Override
-    public void findLeads(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String province, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler) throws org.apache.thrift.TException {
+    public void findLeads(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String state, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      findLeads_call method_call = new findLeads_call(lowAnnualRevenue, highAnnualRevenue, province, resultHandler, this, ___protocolFactory, ___transport);
+      findLeads_call method_call = new findLeads_call(lowAnnualRevenue, highAnnualRevenue, state, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -182,12 +182,12 @@ public class InternalCRM {
     public static class findLeads_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.List<InternalLeadTO>> {
       private double lowAnnualRevenue;
       private double highAnnualRevenue;
-      private java.lang.String province;
-      public findLeads_call(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String province, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private java.lang.String state;
+      public findLeads_call(double lowAnnualRevenue, double highAnnualRevenue, java.lang.String state, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.lowAnnualRevenue = lowAnnualRevenue;
         this.highAnnualRevenue = highAnnualRevenue;
-        this.province = province;
+        this.state = state;
       }
 
       @Override
@@ -196,7 +196,7 @@ public class InternalCRM {
         findLeads_args args = new findLeads_args();
         args.setLowAnnualRevenue(lowAnnualRevenue);
         args.setHighAnnualRevenue(highAnnualRevenue);
-        args.setProvince(province);
+        args.setState(state);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -213,28 +213,28 @@ public class InternalCRM {
     }
 
     @Override
-    public void findLeadsByDate(java.lang.String fromIso, java.lang.String toIso, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler) throws org.apache.thrift.TException {
+    public void findLeadsByDate(java.lang.String startDate, java.lang.String endDate, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      findLeadsByDate_call method_call = new findLeadsByDate_call(fromIso, toIso, resultHandler, this, ___protocolFactory, ___transport);
+      findLeadsByDate_call method_call = new findLeadsByDate_call(startDate, endDate, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class findLeadsByDate_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.List<InternalLeadTO>> {
-      private java.lang.String fromIso;
-      private java.lang.String toIso;
-      public findLeadsByDate_call(java.lang.String fromIso, java.lang.String toIso, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private java.lang.String startDate;
+      private java.lang.String endDate;
+      public findLeadsByDate_call(java.lang.String startDate, java.lang.String endDate, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.fromIso = fromIso;
-        this.toIso = toIso;
+        this.startDate = startDate;
+        this.endDate = endDate;
       }
 
       @Override
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("findLeadsByDate", org.apache.thrift.protocol.TMessageType.CALL, 0));
         findLeadsByDate_args args = new findLeadsByDate_args();
-        args.setFromIso(fromIso);
-        args.setToIso(toIso);
+        args.setStartDate(startDate);
+        args.setEndDate(endDate);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -286,25 +286,25 @@ public class InternalCRM {
     }
 
     @Override
-    public void deleteLead(long id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+    public void deleteLead(InternalLeadTO leadDto, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      deleteLead_call method_call = new deleteLead_call(id, resultHandler, this, ___protocolFactory, ___transport);
+      deleteLead_call method_call = new deleteLead_call(leadDto, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class deleteLead_call extends org.apache.thrift.async.TAsyncMethodCall<Void> {
-      private long id;
-      public deleteLead_call(long id, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private InternalLeadTO leadDto;
+      public deleteLead_call(InternalLeadTO leadDto, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.id = id;
+        this.leadDto = leadDto;
       }
 
       @Override
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("deleteLead", org.apache.thrift.protocol.TMessageType.CALL, 0));
         deleteLead_args args = new deleteLead_args();
-        args.setId(id);
+        args.setLeadDto(leadDto);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -364,7 +364,7 @@ public class InternalCRM {
       @Override
       public findLeads_result getResult(I iface, findLeads_args args) throws org.apache.thrift.TException {
         findLeads_result result = new findLeads_result();
-        result.success = iface.findLeads(args.lowAnnualRevenue, args.highAnnualRevenue, args.province);
+        result.success = iface.findLeads(args.lowAnnualRevenue, args.highAnnualRevenue, args.state);
         return result;
       }
     }
@@ -392,7 +392,7 @@ public class InternalCRM {
       @Override
       public findLeadsByDate_result getResult(I iface, findLeadsByDate_args args) throws org.apache.thrift.TException {
         findLeadsByDate_result result = new findLeadsByDate_result();
-        result.success = iface.findLeadsByDate(args.fromIso, args.toIso);
+        result.success = iface.findLeadsByDate(args.startDate, args.endDate);
         return result;
       }
     }
@@ -449,7 +449,7 @@ public class InternalCRM {
       @Override
       public deleteLead_result getResult(I iface, deleteLead_args args) throws org.apache.thrift.TException {
         deleteLead_result result = new deleteLead_result();
-        iface.deleteLead(args.id);
+        iface.deleteLead(args.leadDto);
         return result;
       }
     }
@@ -537,7 +537,7 @@ public class InternalCRM {
 
       @Override
       public void start(I iface, findLeads_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler) throws org.apache.thrift.TException {
-        iface.findLeads(args.lowAnnualRevenue, args.highAnnualRevenue, args.province,resultHandler);
+        iface.findLeads(args.lowAnnualRevenue, args.highAnnualRevenue, args.state,resultHandler);
       }
     }
 
@@ -604,7 +604,7 @@ public class InternalCRM {
 
       @Override
       public void start(I iface, findLeadsByDate_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.List<InternalLeadTO>> resultHandler) throws org.apache.thrift.TException {
-        iface.findLeadsByDate(args.fromIso, args.toIso,resultHandler);
+        iface.findLeadsByDate(args.startDate, args.endDate,resultHandler);
       }
     }
 
@@ -738,7 +738,7 @@ public class InternalCRM {
 
       @Override
       public void start(I iface, deleteLead_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
-        iface.deleteLead(args.id,resultHandler);
+        iface.deleteLead(args.leadDto,resultHandler);
       }
     }
 
@@ -750,20 +750,20 @@ public class InternalCRM {
 
     private static final org.apache.thrift.protocol.TField LOW_ANNUAL_REVENUE_FIELD_DESC = new org.apache.thrift.protocol.TField("lowAnnualRevenue", org.apache.thrift.protocol.TType.DOUBLE, (short)1);
     private static final org.apache.thrift.protocol.TField HIGH_ANNUAL_REVENUE_FIELD_DESC = new org.apache.thrift.protocol.TField("highAnnualRevenue", org.apache.thrift.protocol.TType.DOUBLE, (short)2);
-    private static final org.apache.thrift.protocol.TField PROVINCE_FIELD_DESC = new org.apache.thrift.protocol.TField("province", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField STATE_FIELD_DESC = new org.apache.thrift.protocol.TField("state", org.apache.thrift.protocol.TType.STRING, (short)3);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new findLeads_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new findLeads_argsTupleSchemeFactory();
 
     public double lowAnnualRevenue; // required
     public double highAnnualRevenue; // required
-    public @org.apache.thrift.annotation.Nullable java.lang.String province; // required
+    public @org.apache.thrift.annotation.Nullable java.lang.String state; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       LOW_ANNUAL_REVENUE((short)1, "lowAnnualRevenue"),
       HIGH_ANNUAL_REVENUE((short)2, "highAnnualRevenue"),
-      PROVINCE((short)3, "province");
+      STATE((short)3, "state");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -783,8 +783,8 @@ public class InternalCRM {
             return LOW_ANNUAL_REVENUE;
           case 2: // HIGH_ANNUAL_REVENUE
             return HIGH_ANNUAL_REVENUE;
-          case 3: // PROVINCE
-            return PROVINCE;
+          case 3: // STATE
+            return STATE;
           default:
             return null;
         }
@@ -838,7 +838,7 @@ public class InternalCRM {
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
       tmpMap.put(_Fields.HIGH_ANNUAL_REVENUE, new org.apache.thrift.meta_data.FieldMetaData("highAnnualRevenue", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
-      tmpMap.put(_Fields.PROVINCE, new org.apache.thrift.meta_data.FieldMetaData("province", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.STATE, new org.apache.thrift.meta_data.FieldMetaData("state", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(findLeads_args.class, metaDataMap);
@@ -850,14 +850,14 @@ public class InternalCRM {
     public findLeads_args(
       double lowAnnualRevenue,
       double highAnnualRevenue,
-      java.lang.String province)
+      java.lang.String state)
     {
       this();
       this.lowAnnualRevenue = lowAnnualRevenue;
       setLowAnnualRevenueIsSet(true);
       this.highAnnualRevenue = highAnnualRevenue;
       setHighAnnualRevenueIsSet(true);
-      this.province = province;
+      this.state = state;
     }
 
     /**
@@ -867,8 +867,8 @@ public class InternalCRM {
       __isset_bitfield = other.__isset_bitfield;
       this.lowAnnualRevenue = other.lowAnnualRevenue;
       this.highAnnualRevenue = other.highAnnualRevenue;
-      if (other.isSetProvince()) {
-        this.province = other.province;
+      if (other.isSetState()) {
+        this.state = other.state;
       }
     }
 
@@ -883,7 +883,7 @@ public class InternalCRM {
       this.lowAnnualRevenue = 0.0;
       setHighAnnualRevenueIsSet(false);
       this.highAnnualRevenue = 0.0;
-      this.province = null;
+      this.state = null;
     }
 
     public double getLowAnnualRevenue() {
@@ -933,27 +933,27 @@ public class InternalCRM {
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.lang.String getProvince() {
-      return this.province;
+    public java.lang.String getState() {
+      return this.state;
     }
 
-    public findLeads_args setProvince(@org.apache.thrift.annotation.Nullable java.lang.String province) {
-      this.province = province;
+    public findLeads_args setState(@org.apache.thrift.annotation.Nullable java.lang.String state) {
+      this.state = state;
       return this;
     }
 
-    public void unsetProvince() {
-      this.province = null;
+    public void unsetState() {
+      this.state = null;
     }
 
-    /** Returns true if field province is set (has been assigned a value) and false otherwise */
-    public boolean isSetProvince() {
-      return this.province != null;
+    /** Returns true if field state is set (has been assigned a value) and false otherwise */
+    public boolean isSetState() {
+      return this.state != null;
     }
 
-    public void setProvinceIsSet(boolean value) {
+    public void setStateIsSet(boolean value) {
       if (!value) {
-        this.province = null;
+        this.state = null;
       }
     }
 
@@ -976,11 +976,11 @@ public class InternalCRM {
         }
         break;
 
-      case PROVINCE:
+      case STATE:
         if (value == null) {
-          unsetProvince();
+          unsetState();
         } else {
-          setProvince((java.lang.String)value);
+          setState((java.lang.String)value);
         }
         break;
 
@@ -997,8 +997,8 @@ public class InternalCRM {
       case HIGH_ANNUAL_REVENUE:
         return getHighAnnualRevenue();
 
-      case PROVINCE:
-        return getProvince();
+      case STATE:
+        return getState();
 
       }
       throw new java.lang.IllegalStateException();
@@ -1016,8 +1016,8 @@ public class InternalCRM {
         return isSetLowAnnualRevenue();
       case HIGH_ANNUAL_REVENUE:
         return isSetHighAnnualRevenue();
-      case PROVINCE:
-        return isSetProvince();
+      case STATE:
+        return isSetState();
       }
       throw new java.lang.IllegalStateException();
     }
@@ -1053,12 +1053,12 @@ public class InternalCRM {
           return false;
       }
 
-      boolean this_present_province = true && this.isSetProvince();
-      boolean that_present_province = true && that.isSetProvince();
-      if (this_present_province || that_present_province) {
-        if (!(this_present_province && that_present_province))
+      boolean this_present_state = true && this.isSetState();
+      boolean that_present_state = true && that.isSetState();
+      if (this_present_state || that_present_state) {
+        if (!(this_present_state && that_present_state))
           return false;
-        if (!this.province.equals(that.province))
+        if (!this.state.equals(that.state))
           return false;
       }
 
@@ -1073,9 +1073,9 @@ public class InternalCRM {
 
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(highAnnualRevenue);
 
-      hashCode = hashCode * 8191 + ((isSetProvince()) ? 131071 : 524287);
-      if (isSetProvince())
-        hashCode = hashCode * 8191 + province.hashCode();
+      hashCode = hashCode * 8191 + ((isSetState()) ? 131071 : 524287);
+      if (isSetState())
+        hashCode = hashCode * 8191 + state.hashCode();
 
       return hashCode;
     }
@@ -1108,12 +1108,12 @@ public class InternalCRM {
           return lastComparison;
         }
       }
-      lastComparison = java.lang.Boolean.compare(isSetProvince(), other.isSetProvince());
+      lastComparison = java.lang.Boolean.compare(isSetState(), other.isSetState());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetProvince()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.province, other.province);
+      if (isSetState()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.state, other.state);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -1150,11 +1150,11 @@ public class InternalCRM {
       sb.append(this.highAnnualRevenue);
       first = false;
       if (!first) sb.append(", ");
-      sb.append("province:");
-      if (this.province == null) {
+      sb.append("state:");
+      if (this.state == null) {
         sb.append("null");
       } else {
-        sb.append(this.province);
+        sb.append(this.state);
       }
       first = false;
       sb.append(")");
@@ -1220,10 +1220,10 @@ public class InternalCRM {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // PROVINCE
+            case 3: // STATE
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.province = iprot.readString();
-                struct.setProvinceIsSet(true);
+                struct.state = iprot.readString();
+                struct.setStateIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -1250,9 +1250,9 @@ public class InternalCRM {
         oprot.writeFieldBegin(HIGH_ANNUAL_REVENUE_FIELD_DESC);
         oprot.writeDouble(struct.highAnnualRevenue);
         oprot.writeFieldEnd();
-        if (struct.province != null) {
-          oprot.writeFieldBegin(PROVINCE_FIELD_DESC);
-          oprot.writeString(struct.province);
+        if (struct.state != null) {
+          oprot.writeFieldBegin(STATE_FIELD_DESC);
+          oprot.writeString(struct.state);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -1280,7 +1280,7 @@ public class InternalCRM {
         if (struct.isSetHighAnnualRevenue()) {
           optionals.set(1);
         }
-        if (struct.isSetProvince()) {
+        if (struct.isSetState()) {
           optionals.set(2);
         }
         oprot.writeBitSet(optionals, 3);
@@ -1290,8 +1290,8 @@ public class InternalCRM {
         if (struct.isSetHighAnnualRevenue()) {
           oprot.writeDouble(struct.highAnnualRevenue);
         }
-        if (struct.isSetProvince()) {
-          oprot.writeString(struct.province);
+        if (struct.isSetState()) {
+          oprot.writeString(struct.state);
         }
       }
 
@@ -1308,8 +1308,8 @@ public class InternalCRM {
           struct.setHighAnnualRevenueIsSet(true);
         }
         if (incoming.get(2)) {
-          struct.province = iprot.readString();
-          struct.setProvinceIsSet(true);
+          struct.state = iprot.readString();
+          struct.setStateIsSet(true);
         }
       }
     }
@@ -1756,19 +1756,19 @@ public class InternalCRM {
   public static class findLeadsByDate_args implements org.apache.thrift.TBase<findLeadsByDate_args, findLeadsByDate_args._Fields>, java.io.Serializable, Cloneable, Comparable<findLeadsByDate_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("findLeadsByDate_args");
 
-    private static final org.apache.thrift.protocol.TField FROM_ISO_FIELD_DESC = new org.apache.thrift.protocol.TField("fromIso", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField TO_ISO_FIELD_DESC = new org.apache.thrift.protocol.TField("toIso", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField START_DATE_FIELD_DESC = new org.apache.thrift.protocol.TField("startDate", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField END_DATE_FIELD_DESC = new org.apache.thrift.protocol.TField("endDate", org.apache.thrift.protocol.TType.STRING, (short)2);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new findLeadsByDate_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new findLeadsByDate_argsTupleSchemeFactory();
 
-    public @org.apache.thrift.annotation.Nullable java.lang.String fromIso; // required
-    public @org.apache.thrift.annotation.Nullable java.lang.String toIso; // required
+    public @org.apache.thrift.annotation.Nullable java.lang.String startDate; // required
+    public @org.apache.thrift.annotation.Nullable java.lang.String endDate; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      FROM_ISO((short)1, "fromIso"),
-      TO_ISO((short)2, "toIso");
+      START_DATE((short)1, "startDate"),
+      END_DATE((short)2, "endDate");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -1784,10 +1784,10 @@ public class InternalCRM {
       @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // FROM_ISO
-            return FROM_ISO;
-          case 2: // TO_ISO
-            return TO_ISO;
+          case 1: // START_DATE
+            return START_DATE;
+          case 2: // END_DATE
+            return END_DATE;
           default:
             return null;
         }
@@ -1834,9 +1834,9 @@ public class InternalCRM {
     public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.FROM_ISO, new org.apache.thrift.meta_data.FieldMetaData("fromIso", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.START_DATE, new org.apache.thrift.meta_data.FieldMetaData("startDate", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TO_ISO, new org.apache.thrift.meta_data.FieldMetaData("toIso", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.END_DATE, new org.apache.thrift.meta_data.FieldMetaData("endDate", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(findLeadsByDate_args.class, metaDataMap);
@@ -1846,23 +1846,23 @@ public class InternalCRM {
     }
 
     public findLeadsByDate_args(
-      java.lang.String fromIso,
-      java.lang.String toIso)
+      java.lang.String startDate,
+      java.lang.String endDate)
     {
       this();
-      this.fromIso = fromIso;
-      this.toIso = toIso;
+      this.startDate = startDate;
+      this.endDate = endDate;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public findLeadsByDate_args(findLeadsByDate_args other) {
-      if (other.isSetFromIso()) {
-        this.fromIso = other.fromIso;
+      if (other.isSetStartDate()) {
+        this.startDate = other.startDate;
       }
-      if (other.isSetToIso()) {
-        this.toIso = other.toIso;
+      if (other.isSetEndDate()) {
+        this.endDate = other.endDate;
       }
     }
 
@@ -1873,76 +1873,76 @@ public class InternalCRM {
 
     @Override
     public void clear() {
-      this.fromIso = null;
-      this.toIso = null;
+      this.startDate = null;
+      this.endDate = null;
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.lang.String getFromIso() {
-      return this.fromIso;
+    public java.lang.String getStartDate() {
+      return this.startDate;
     }
 
-    public findLeadsByDate_args setFromIso(@org.apache.thrift.annotation.Nullable java.lang.String fromIso) {
-      this.fromIso = fromIso;
+    public findLeadsByDate_args setStartDate(@org.apache.thrift.annotation.Nullable java.lang.String startDate) {
+      this.startDate = startDate;
       return this;
     }
 
-    public void unsetFromIso() {
-      this.fromIso = null;
+    public void unsetStartDate() {
+      this.startDate = null;
     }
 
-    /** Returns true if field fromIso is set (has been assigned a value) and false otherwise */
-    public boolean isSetFromIso() {
-      return this.fromIso != null;
+    /** Returns true if field startDate is set (has been assigned a value) and false otherwise */
+    public boolean isSetStartDate() {
+      return this.startDate != null;
     }
 
-    public void setFromIsoIsSet(boolean value) {
+    public void setStartDateIsSet(boolean value) {
       if (!value) {
-        this.fromIso = null;
+        this.startDate = null;
       }
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.lang.String getToIso() {
-      return this.toIso;
+    public java.lang.String getEndDate() {
+      return this.endDate;
     }
 
-    public findLeadsByDate_args setToIso(@org.apache.thrift.annotation.Nullable java.lang.String toIso) {
-      this.toIso = toIso;
+    public findLeadsByDate_args setEndDate(@org.apache.thrift.annotation.Nullable java.lang.String endDate) {
+      this.endDate = endDate;
       return this;
     }
 
-    public void unsetToIso() {
-      this.toIso = null;
+    public void unsetEndDate() {
+      this.endDate = null;
     }
 
-    /** Returns true if field toIso is set (has been assigned a value) and false otherwise */
-    public boolean isSetToIso() {
-      return this.toIso != null;
+    /** Returns true if field endDate is set (has been assigned a value) and false otherwise */
+    public boolean isSetEndDate() {
+      return this.endDate != null;
     }
 
-    public void setToIsoIsSet(boolean value) {
+    public void setEndDateIsSet(boolean value) {
       if (!value) {
-        this.toIso = null;
+        this.endDate = null;
       }
     }
 
     @Override
     public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
       switch (field) {
-      case FROM_ISO:
+      case START_DATE:
         if (value == null) {
-          unsetFromIso();
+          unsetStartDate();
         } else {
-          setFromIso((java.lang.String)value);
+          setStartDate((java.lang.String)value);
         }
         break;
 
-      case TO_ISO:
+      case END_DATE:
         if (value == null) {
-          unsetToIso();
+          unsetEndDate();
         } else {
-          setToIso((java.lang.String)value);
+          setEndDate((java.lang.String)value);
         }
         break;
 
@@ -1953,11 +1953,11 @@ public class InternalCRM {
     @Override
     public java.lang.Object getFieldValue(_Fields field) {
       switch (field) {
-      case FROM_ISO:
-        return getFromIso();
+      case START_DATE:
+        return getStartDate();
 
-      case TO_ISO:
-        return getToIso();
+      case END_DATE:
+        return getEndDate();
 
       }
       throw new java.lang.IllegalStateException();
@@ -1971,10 +1971,10 @@ public class InternalCRM {
       }
 
       switch (field) {
-      case FROM_ISO:
-        return isSetFromIso();
-      case TO_ISO:
-        return isSetToIso();
+      case START_DATE:
+        return isSetStartDate();
+      case END_DATE:
+        return isSetEndDate();
       }
       throw new java.lang.IllegalStateException();
     }
@@ -1992,21 +1992,21 @@ public class InternalCRM {
       if (this == that)
         return true;
 
-      boolean this_present_fromIso = true && this.isSetFromIso();
-      boolean that_present_fromIso = true && that.isSetFromIso();
-      if (this_present_fromIso || that_present_fromIso) {
-        if (!(this_present_fromIso && that_present_fromIso))
+      boolean this_present_startDate = true && this.isSetStartDate();
+      boolean that_present_startDate = true && that.isSetStartDate();
+      if (this_present_startDate || that_present_startDate) {
+        if (!(this_present_startDate && that_present_startDate))
           return false;
-        if (!this.fromIso.equals(that.fromIso))
+        if (!this.startDate.equals(that.startDate))
           return false;
       }
 
-      boolean this_present_toIso = true && this.isSetToIso();
-      boolean that_present_toIso = true && that.isSetToIso();
-      if (this_present_toIso || that_present_toIso) {
-        if (!(this_present_toIso && that_present_toIso))
+      boolean this_present_endDate = true && this.isSetEndDate();
+      boolean that_present_endDate = true && that.isSetEndDate();
+      if (this_present_endDate || that_present_endDate) {
+        if (!(this_present_endDate && that_present_endDate))
           return false;
-        if (!this.toIso.equals(that.toIso))
+        if (!this.endDate.equals(that.endDate))
           return false;
       }
 
@@ -2017,13 +2017,13 @@ public class InternalCRM {
     public int hashCode() {
       int hashCode = 1;
 
-      hashCode = hashCode * 8191 + ((isSetFromIso()) ? 131071 : 524287);
-      if (isSetFromIso())
-        hashCode = hashCode * 8191 + fromIso.hashCode();
+      hashCode = hashCode * 8191 + ((isSetStartDate()) ? 131071 : 524287);
+      if (isSetStartDate())
+        hashCode = hashCode * 8191 + startDate.hashCode();
 
-      hashCode = hashCode * 8191 + ((isSetToIso()) ? 131071 : 524287);
-      if (isSetToIso())
-        hashCode = hashCode * 8191 + toIso.hashCode();
+      hashCode = hashCode * 8191 + ((isSetEndDate()) ? 131071 : 524287);
+      if (isSetEndDate())
+        hashCode = hashCode * 8191 + endDate.hashCode();
 
       return hashCode;
     }
@@ -2036,22 +2036,22 @@ public class InternalCRM {
 
       int lastComparison = 0;
 
-      lastComparison = java.lang.Boolean.compare(isSetFromIso(), other.isSetFromIso());
+      lastComparison = java.lang.Boolean.compare(isSetStartDate(), other.isSetStartDate());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetFromIso()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fromIso, other.fromIso);
+      if (isSetStartDate()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.startDate, other.startDate);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
-      lastComparison = java.lang.Boolean.compare(isSetToIso(), other.isSetToIso());
+      lastComparison = java.lang.Boolean.compare(isSetEndDate(), other.isSetEndDate());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetToIso()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.toIso, other.toIso);
+      if (isSetEndDate()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.endDate, other.endDate);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -2080,19 +2080,19 @@ public class InternalCRM {
       java.lang.StringBuilder sb = new java.lang.StringBuilder("findLeadsByDate_args(");
       boolean first = true;
 
-      sb.append("fromIso:");
-      if (this.fromIso == null) {
+      sb.append("startDate:");
+      if (this.startDate == null) {
         sb.append("null");
       } else {
-        sb.append(this.fromIso);
+        sb.append(this.startDate);
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("toIso:");
-      if (this.toIso == null) {
+      sb.append("endDate:");
+      if (this.endDate == null) {
         sb.append("null");
       } else {
-        sb.append(this.toIso);
+        sb.append(this.endDate);
       }
       first = false;
       sb.append(")");
@@ -2140,18 +2140,18 @@ public class InternalCRM {
             break;
           }
           switch (schemeField.id) {
-            case 1: // FROM_ISO
+            case 1: // START_DATE
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.fromIso = iprot.readString();
-                struct.setFromIsoIsSet(true);
+                struct.startDate = iprot.readString();
+                struct.setStartDateIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // TO_ISO
+            case 2: // END_DATE
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.toIso = iprot.readString();
-                struct.setToIsoIsSet(true);
+                struct.endDate = iprot.readString();
+                struct.setEndDateIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -2172,14 +2172,14 @@ public class InternalCRM {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.fromIso != null) {
-          oprot.writeFieldBegin(FROM_ISO_FIELD_DESC);
-          oprot.writeString(struct.fromIso);
+        if (struct.startDate != null) {
+          oprot.writeFieldBegin(START_DATE_FIELD_DESC);
+          oprot.writeString(struct.startDate);
           oprot.writeFieldEnd();
         }
-        if (struct.toIso != null) {
-          oprot.writeFieldBegin(TO_ISO_FIELD_DESC);
-          oprot.writeString(struct.toIso);
+        if (struct.endDate != null) {
+          oprot.writeFieldBegin(END_DATE_FIELD_DESC);
+          oprot.writeString(struct.endDate);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -2201,18 +2201,18 @@ public class InternalCRM {
       public void write(org.apache.thrift.protocol.TProtocol prot, findLeadsByDate_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet optionals = new java.util.BitSet();
-        if (struct.isSetFromIso()) {
+        if (struct.isSetStartDate()) {
           optionals.set(0);
         }
-        if (struct.isSetToIso()) {
+        if (struct.isSetEndDate()) {
           optionals.set(1);
         }
         oprot.writeBitSet(optionals, 2);
-        if (struct.isSetFromIso()) {
-          oprot.writeString(struct.fromIso);
+        if (struct.isSetStartDate()) {
+          oprot.writeString(struct.startDate);
         }
-        if (struct.isSetToIso()) {
-          oprot.writeString(struct.toIso);
+        if (struct.isSetEndDate()) {
+          oprot.writeString(struct.endDate);
         }
       }
 
@@ -2221,12 +2221,12 @@ public class InternalCRM {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
-          struct.fromIso = iprot.readString();
-          struct.setFromIsoIsSet(true);
+          struct.startDate = iprot.readString();
+          struct.setStartDateIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.toIso = iprot.readString();
-          struct.setToIsoIsSet(true);
+          struct.endDate = iprot.readString();
+          struct.setEndDateIsSet(true);
         }
       }
     }
@@ -3432,16 +3432,16 @@ public class InternalCRM {
   public static class deleteLead_args implements org.apache.thrift.TBase<deleteLead_args, deleteLead_args._Fields>, java.io.Serializable, Cloneable, Comparable<deleteLead_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("deleteLead_args");
 
-    private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I64, (short)1);
+    private static final org.apache.thrift.protocol.TField LEAD_DTO_FIELD_DESC = new org.apache.thrift.protocol.TField("leadDto", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new deleteLead_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new deleteLead_argsTupleSchemeFactory();
 
-    public long id; // required
+    public @org.apache.thrift.annotation.Nullable InternalLeadTO leadDto; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      ID((short)1, "id");
+      LEAD_DTO((short)1, "leadDto");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -3457,8 +3457,8 @@ public class InternalCRM {
       @org.apache.thrift.annotation.Nullable
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // ID
-            return ID;
+          case 1: // LEAD_DTO
+            return LEAD_DTO;
           default:
             return null;
         }
@@ -3502,13 +3502,11 @@ public class InternalCRM {
     }
 
     // isset id assignments
-    private static final int __ID_ISSET_ID = 0;
-    private byte __isset_bitfield = 0;
     public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+      tmpMap.put(_Fields.LEAD_DTO, new org.apache.thrift.meta_data.FieldMetaData("leadDto", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, InternalLeadTO.class)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(deleteLead_args.class, metaDataMap);
     }
@@ -3517,19 +3515,19 @@ public class InternalCRM {
     }
 
     public deleteLead_args(
-      long id)
+      InternalLeadTO leadDto)
     {
       this();
-      this.id = id;
-      setIdIsSet(true);
+      this.leadDto = leadDto;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public deleteLead_args(deleteLead_args other) {
-      __isset_bitfield = other.__isset_bitfield;
-      this.id = other.id;
+      if (other.isSetLeadDto()) {
+        this.leadDto = new InternalLeadTO(other.leadDto);
+      }
     }
 
     @Override
@@ -3539,41 +3537,42 @@ public class InternalCRM {
 
     @Override
     public void clear() {
-      setIdIsSet(false);
-      this.id = 0;
+      this.leadDto = null;
     }
 
-    public long getId() {
-      return this.id;
+    @org.apache.thrift.annotation.Nullable
+    public InternalLeadTO getLeadDto() {
+      return this.leadDto;
     }
 
-    public deleteLead_args setId(long id) {
-      this.id = id;
-      setIdIsSet(true);
+    public deleteLead_args setLeadDto(@org.apache.thrift.annotation.Nullable InternalLeadTO leadDto) {
+      this.leadDto = leadDto;
       return this;
     }
 
-    public void unsetId() {
-      __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ID_ISSET_ID);
+    public void unsetLeadDto() {
+      this.leadDto = null;
     }
 
-    /** Returns true if field id is set (has been assigned a value) and false otherwise */
-    public boolean isSetId() {
-      return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ID_ISSET_ID);
+    /** Returns true if field leadDto is set (has been assigned a value) and false otherwise */
+    public boolean isSetLeadDto() {
+      return this.leadDto != null;
     }
 
-    public void setIdIsSet(boolean value) {
-      __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
+    public void setLeadDtoIsSet(boolean value) {
+      if (!value) {
+        this.leadDto = null;
+      }
     }
 
     @Override
     public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
       switch (field) {
-      case ID:
+      case LEAD_DTO:
         if (value == null) {
-          unsetId();
+          unsetLeadDto();
         } else {
-          setId((java.lang.Long)value);
+          setLeadDto((InternalLeadTO)value);
         }
         break;
 
@@ -3584,8 +3583,8 @@ public class InternalCRM {
     @Override
     public java.lang.Object getFieldValue(_Fields field) {
       switch (field) {
-      case ID:
-        return getId();
+      case LEAD_DTO:
+        return getLeadDto();
 
       }
       throw new java.lang.IllegalStateException();
@@ -3599,8 +3598,8 @@ public class InternalCRM {
       }
 
       switch (field) {
-      case ID:
-        return isSetId();
+      case LEAD_DTO:
+        return isSetLeadDto();
       }
       throw new java.lang.IllegalStateException();
     }
@@ -3618,12 +3617,12 @@ public class InternalCRM {
       if (this == that)
         return true;
 
-      boolean this_present_id = true;
-      boolean that_present_id = true;
-      if (this_present_id || that_present_id) {
-        if (!(this_present_id && that_present_id))
+      boolean this_present_leadDto = true && this.isSetLeadDto();
+      boolean that_present_leadDto = true && that.isSetLeadDto();
+      if (this_present_leadDto || that_present_leadDto) {
+        if (!(this_present_leadDto && that_present_leadDto))
           return false;
-        if (this.id != that.id)
+        if (!this.leadDto.equals(that.leadDto))
           return false;
       }
 
@@ -3634,7 +3633,9 @@ public class InternalCRM {
     public int hashCode() {
       int hashCode = 1;
 
-      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(id);
+      hashCode = hashCode * 8191 + ((isSetLeadDto()) ? 131071 : 524287);
+      if (isSetLeadDto())
+        hashCode = hashCode * 8191 + leadDto.hashCode();
 
       return hashCode;
     }
@@ -3647,12 +3648,12 @@ public class InternalCRM {
 
       int lastComparison = 0;
 
-      lastComparison = java.lang.Boolean.compare(isSetId(), other.isSetId());
+      lastComparison = java.lang.Boolean.compare(isSetLeadDto(), other.isSetLeadDto());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetId()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, other.id);
+      if (isSetLeadDto()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.leadDto, other.leadDto);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -3681,8 +3682,12 @@ public class InternalCRM {
       java.lang.StringBuilder sb = new java.lang.StringBuilder("deleteLead_args(");
       boolean first = true;
 
-      sb.append("id:");
-      sb.append(this.id);
+      sb.append("leadDto:");
+      if (this.leadDto == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.leadDto);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -3691,6 +3696,9 @@ public class InternalCRM {
     public void validate() throws org.apache.thrift.TException {
       // check for required fields
       // check for sub-struct validity
+      if (leadDto != null) {
+        leadDto.validate();
+      }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -3703,8 +3711,6 @@ public class InternalCRM {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bitfield = 0;
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -3731,10 +3737,11 @@ public class InternalCRM {
             break;
           }
           switch (schemeField.id) {
-            case 1: // ID
-              if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-                struct.id = iprot.readI64();
-                struct.setIdIsSet(true);
+            case 1: // LEAD_DTO
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.leadDto = new InternalLeadTO();
+                struct.leadDto.read(iprot);
+                struct.setLeadDtoIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -3755,9 +3762,11 @@ public class InternalCRM {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldBegin(ID_FIELD_DESC);
-        oprot.writeI64(struct.id);
-        oprot.writeFieldEnd();
+        if (struct.leadDto != null) {
+          oprot.writeFieldBegin(LEAD_DTO_FIELD_DESC);
+          struct.leadDto.write(oprot);
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -3777,12 +3786,12 @@ public class InternalCRM {
       public void write(org.apache.thrift.protocol.TProtocol prot, deleteLead_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet optionals = new java.util.BitSet();
-        if (struct.isSetId()) {
+        if (struct.isSetLeadDto()) {
           optionals.set(0);
         }
         oprot.writeBitSet(optionals, 1);
-        if (struct.isSetId()) {
-          oprot.writeI64(struct.id);
+        if (struct.isSetLeadDto()) {
+          struct.leadDto.write(oprot);
         }
       }
 
@@ -3791,8 +3800,9 @@ public class InternalCRM {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
         java.util.BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.id = iprot.readI64();
-          struct.setIdIsSet(true);
+          struct.leadDto = new InternalLeadTO();
+          struct.leadDto.read(iprot);
+          struct.setLeadDtoIsSet(true);
         }
       }
     }
