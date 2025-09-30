@@ -1,0 +1,21 @@
+plugins { id 'java' }
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories { mavenCentral() }
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+}
+
+// Tâche simple pour la démo CLI
+tasks.register('executerGeoDemo', JavaExec) {
+    group = 'application'
+    description = 'Exécute la démonstration de géolocalisation.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.example.geolocalisation.DemoGeolocalisation'
+    if (project.hasProperty('adresse')) {
+        args project.property('adresse')
+    }
+}
