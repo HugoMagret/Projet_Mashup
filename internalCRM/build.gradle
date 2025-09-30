@@ -20,12 +20,24 @@ sourceSets {
 dependencies {
     // Dépendance essentielle pour les classes générées par Thrift
     implementation 'org.apache.thrift:libthrift:0.16.0'
-
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Logger simple pour éviter le warning SLF4J (NOP binder)
+    implementation 'org.slf4j:slf4j-simple:1.7.36'
 }
 
-test {
-    useJUnitPlatform()
+// Tâche : lancer le serveur Thrift InternalCRM
+tasks.register('runInternalCRMServer', JavaExec) {
+    group = 'application'
+    description = 'Lance le serveur Thrift InternalCRM (port par défaut 9090).'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.example.internal.InternalCRMServer'
+    if (project.hasProperty('port')) args project.property('port')
 }
+
+// Tâche : lancer une démo locale sans réseau (instancie juste le handler) A SUPP AVEC LE FICHIER DEMO
+tasks.register('runInternalCRMDemo', JavaExec) {
+    group = 'application'
+    description = 'Exécute une démo locale du handler InternalCRM.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.example.internal.InternalCRMDemo'
+}
+

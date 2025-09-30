@@ -13,8 +13,24 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.apache.thrift:libthrift:0.16.0'
+    implementation project(':internalCRM')
+    // Implémentation SLF4J simple pour supprimer les warnings
+    implementation 'org.slf4j:slf4j-simple:1.7.36'
 }
 
 test {
     useJUnitPlatform()
+}
+
+tasks.register('runInternalClient', JavaExec) {
+    group = 'application'
+    description = 'Client simple pour appeler le service Thrift InternalCRM.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.example.InternalCRMThriftClient'
+    // Paramètres optionnels: -Phost=localhost -Pport=9090 -Plow=0 -Phigh=100000 -Pprovince="Maine-et-Loire"
+    def argsList = []
+    // IMPORTANT : on évite 'state' qui collisionne avec l'API Gradle -> on utilise 'province'.
+    ['host','port','low','high','province'].each { p -> if (project.hasProperty(p)) argsList << "${p}=${project.property(p)}" }
+    if (!argsList.isEmpty()) args argsList
 }
