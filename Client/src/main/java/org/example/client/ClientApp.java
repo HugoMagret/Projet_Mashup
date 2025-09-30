@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 
@@ -33,16 +32,15 @@ public class ClientApp {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpGet request = new HttpGet(url);
 
-            ClassicHttpResponse response = (ClassicHttpResponse) client.execute(request);
+            // Utilisation du ResponseHandler → plus de dépréciation
+            String responseBody = client.execute(request, httpResponse -> {
+                if (httpResponse.getCode() != HttpStatus.SC_OK) {
+                    throw new RuntimeException("Erreur HTTP " + httpResponse.getCode() +
+                            " : " + httpResponse.getReasonPhrase());
+                }
+                return EntityUtils.toString(httpResponse.getEntity());
+            });
 
-            if (response.getCode() != HttpStatus.SC_OK) {
-                System.err.printf("Erreur HTTP %d : %s%n",
-                        response.getCode(),
-                        response.getReasonPhrase());
-                System.exit(1);
-            }
-
-            String responseBody = EntityUtils.toString(response.getEntity());
             JsonNode leads = mapper.readTree(responseBody);
 
             if (!leads.isArray() || leads.isEmpty()) {
