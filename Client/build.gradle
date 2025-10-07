@@ -1,0 +1,16 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'  // pour parser JSON
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3'  // pour faire des requêtes HTTP
+}
+
+application {
+    mainClass = 'org.example.client.ClientApp'
+}
