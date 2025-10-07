@@ -11,11 +11,26 @@ java {
     sourceCompatibility = '17'
 }
 
+test {
+    testLogging {
+        // Montre la sortie standard et les logs
+        showStandardStreams = true
+        events "passed", "skipped", "failed"
+    }
+}
+
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation project(':internalCRM')
+    implementation project(':geolocation')
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
+    implementation ('org.apache.thrift:libthrift:0.17.0') {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

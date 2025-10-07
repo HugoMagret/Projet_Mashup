@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
     private final SalesforceClient salesforceClient;
     private final GeoClient geoClient;
 
+    /*
     @Autowired
     public VirtualCRMServiceImpl(
             InternalCRMClient internalCRMClient,
@@ -28,7 +30,14 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
         this.internalCRMClient = internalCRMClient;
         this.salesforceClient = salesforceClient;
         this.geoClient = geoClient;
+    }*/
+    @Autowired
+    public VirtualCRMServiceImpl(InternalCRMClient internalCRMClient) {
+        this.internalCRMClient = internalCRMClient;
+        this.salesforceClient = null;
+        this.geoClient = null;
     }
+
 
 
 
@@ -38,22 +47,20 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
 
 
         // Get leads "InternalCRM"
-        List<VirtualLeadDTO> internalLeads = internalCRMClient.findLeads(minRevenue, maxRevenue, province)
-                .stream()
-                .map(LeadMapper::toVirtualLead)
-                .collect(Collectors.toList());
+        List<VirtualLeadDTO> internalLeads = internalCRMClient.findLeads(minRevenue, maxRevenue, province);
 
         // Get leads "Salesforce"
+        /*
         List<VirtualLeadDTO> salesforceLeads = salesforceClient.findLeads(minRevenue, maxRevenue, province)
                 .stream()
                 .map(LeadMapper::toVirtualLead)
                 .collect(Collectors.toList());
-
+        */
 
         List<VirtualLeadDTO> allLeads = new ArrayList<>();
         allLeads.addAll(internalLeads);
-        allLeads.addAll(salesforceLeads);
-
+        //allLeads.addAll(salesforceLeads);
+        /*
         allLeads.forEach(lead -> {
             try {
                 lead.setGeographicPoint(geoClient.getCoordinates(lead.getFullAddress()));
@@ -61,9 +68,15 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
                 lead.setGeographicPoint(null);
             }
         });
-
+        */
         allLeads.sort(Comparator.comparingDouble(VirtualLeadDTO::getAnnualRevenue).reversed());
 
         return allLeads;
+    }
+
+    // TEMP
+    @Override
+    public List<VirtualLeadDTO> findLeadsByDate(String startDate, String endDate) {
+        return List.of();
     }
 }
