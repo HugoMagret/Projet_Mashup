@@ -14,108 +14,123 @@ import java.time.Duration;
 import java.util.Optional;
 
 /**
- * Client minimal de l'API publique Nominatim (OpenStreetMap) pour la section 2.4.
- * Objectif pédagogique : montrer comment construire une requête HTTP, gérer un timeout,
- * parser la réponse JSON et retourner un objet métier simple.
- *
- * Rappels :
- *  - Nominatim ne demande pas d'API key (mais exige un User-Agent explicite)
- *  - On se limite volontairement au PREMIER résultat (limit=1)
- *  - On extrait UNIQUEMENT latitude, longitude et display_name
- *  - On fournit un MODE HORS-LIGNE (simulation) activable via -Dgeo.offline=true ou env GEO_OFFLINE=1
+ * GÉOLOCALISATION : transforme une adresse écrite (ex: "10 rue de la Paix Paris") 
+ * en coordonnées GPS (latitude, longitude).
+ * 
+ * On utilise le service gratuit Nominatim d'OpenStreetMap.
+ * EXEMPLE : "2 boulevard lavoisier angers" → lat=47.48, lon=-0.59
  */
 public class ClientNominatim {
 
     private static final String URL_BASE = "https://nominatim.openstreetmap.org";
-    // Client HTTP réutilisable (réduction du coût de création de sockets)
+    
+    // Outil pour faire des requêtes HTTP (connexion internet)
     private final HttpClient httpClient = HttpClient.newBuilder()
-        // Timeout de connexion (établissement de la connexion TCP)
-        .connectTimeout(Duration.ofSeconds(5))
-            .build();
-    // ObjectMapper Jackson pour lire / naviguer dans le JSON
+        .connectTimeout(Duration.ofSeconds(5)) // 5 secondes max pour se connecter
+        .build();
+    
+    // Outil pour lire le JSON que renvoie Nominatim
     private final ObjectMapper mapper = new ObjectMapper();
-    // User-Agent envoyé à Nominatim (doit contenir une info de contact selon leur politique d'usage)
+    
+    // Nom du logiciel + email (obligatoire pour Nominatim, sinon ils bloquent)
     private final String userAgent;
-    // Si true : on ne fait PAS d'appel réseau, on renvoie des données simulées
+    
+    // Si true = pas d'internet, on simule avec des valeurs bidons
     private final boolean modeHorsLigne;
 
     /**
-     * @param userAgent valeur User-Agent (doit contenir un contact conformément aux règles Nominatim)
+     * CONSTRUCTEUR 1 : on doit dire qui on est à Nominatim
+     * @param userAgent exemple: "MonApp/1.0 (contact@monsite.com)"
      */
     public ClientNominatim(String userAgent) {
-        this.userAgent = userAgent; // on stocke la valeur reçue
-        // Activation du mode simulation si :
-        //  - l'option JVM -Dgeo.offline=true est présente
-        //  - OU la variable d'environnement GEO_OFFLINE vaut "1"
+        this.userAgent = userAgent;
+        // Active le mode simulation si on tape: 
+        // GEO_OFFLINE=1 ./gradlew ... OU java -Dgeo.offline=true ...
         this.modeHorsLigne = Boolean.getBoolean("geo.offline") ||
                 "1".equalsIgnoreCase(System.getenv("GEO_OFFLINE"));
     }
 
-    // Constructeur pratique : fournit un User-Agent par défaut (à personnaliser dans un vrai projet)
-    public ClientNominatim() { this("ProjetMashup/1.0 (contact@example.com)"); }
+    /**
+     * CONSTRUCTEUR 2 : version simple avec un nom bidon
+     * ATTENTION : l'email est faux ! Dans un vrai projet, mets ton vrai contact.
+     */
+    public ClientNominatim() { 
+        this("ProjetMashup-Etudiant/1.0 (etudiant-test@example.com)"); 
+    }
 
     /**
-     * Géolocalise une adresse libre : retourne le premier résultat si trouvé.
-     * @param adresseLibre ex: "2 boulevard de lavoisier, 49100, angers, france"
+     * MÉTHODE PRINCIPALE : transforme "10 rue machin Paris" en coordonnées GPS
+     * @param adresseLibre exemple: "2 boulevard de lavoisier, angers, france"
+     * @return coordonnées (lat/lon) + nom complet, ou rien si pas trouvé
      */
     public Optional<PointGeographique> geolocaliserAdresse(String adresseLibre) {
-        // Validation basique : adresse null ou vide => aucun résultat
+        // Si l'adresse est vide, pas la peine de chercher
         if (adresseLibre == null || adresseLibre.isBlank()) return Optional.empty();
 
-        // 1. MODE HORS-LIGNE : on évite le réseau (tests, situation sans internet)
-        //    On reconnaît l'adresse de l'énoncé via quelques mots-clés.
+        // MODE SIMULATION (quand pas d'internet ou pour tests)
         if (modeHorsLigne) {
-            String normalise = adresseLibre.toLowerCase(); // pour comparaison insensible à la casse
-            if (normalise.contains("lavoisier") && normalise.contains("angers")) {
+            String minuscule = adresseLibre.toLowerCase();
+            // On reconnaît seulement l'adresse de l'exemple du cours
+            if (minuscule.contains("lavoisier") && minuscule.contains("angers")) {
                 return Optional.of(new PointGeographique(
-                        47.4795093,
-                        -0.6003698,
+                        47.4795093,  // latitude de l'UFR sciences Angers
+                        -0.6003698,  // longitude de l'UFR sciences Angers
                         "Boulevard de Lavoisier, Belle-Beille, Angers, Maine-et-Loire, Pays de la Loire, France"));
             }
-            // Aucune autre adresse simulée => on retourne vide
+            // Autre adresse en mode simulation = pas trouvé
             return Optional.empty();
         }
 
-        // 2. MODE NORMAL (réseau)
+        // MODE NORMAL : on va vraiment sur internet
         try {
-            // Encodage de l'adresse pour la mettre dans l'URL (espaces => %20, etc.)
-            String q = URLEncoder.encode(adresseLibre, StandardCharsets.UTF_8);
-            // Construction de l'URL avec format JSON + 1 seul résultat
-            String url = URL_BASE + "/search?format=json&limit=1&q=" + q;
+            // 1. Préparer l'adresse pour l'URL (remplacer espaces par %20, etc.)
+            String adresseEncodee = URLEncoder.encode(adresseLibre, StandardCharsets.UTF_8);
+            
+            // 2. Construire l'URL complète
+            String url = URL_BASE + "/search?format=json&limit=1&q=" + adresseEncodee;
+            // Explication de l'URL :
+            // ?format=json = je veux du JSON (pas du XML)
+            // &limit=1 = donne-moi seulement le meilleur résultat
+            // &q=... = l'adresse à chercher
 
-            // Construction de la requête HTTP
+            // 3. Préparer la requête HTTP
             HttpRequest requete = HttpRequest.newBuilder()
-                    .GET() // méthode HTTP
-                    .uri(URI.create(url)) // cible à appeler
-                    .timeout(Duration.ofSeconds(30)) // durée max totale pour la requête
-                    .header("User-Agent", userAgent) // obligation Nominatim
-                    .build(); // création de l'objet immutable
+                    .GET()                              // méthode GET (lire des données)
+                    .uri(URI.create(url))               // où aller
+                    .timeout(Duration.ofSeconds(30))    // 30 secondes max pour la réponse
+                    .header("User-Agent", userAgent)    // qui on est (obligatoire)
+                    .build();                           // créer l'objet requête
 
-            // Envoi synchrone de la requête et récupération de la réponse texte
+            // 4. Envoyer la requête et récupérer la réponse
             HttpResponse<String> reponse = httpClient.send(requete, HttpResponse.BodyHandlers.ofString());
 
-            // Vérification HTTP 200 OK
+            // 5. Vérifier que ça a marché (code 200 = OK)
             if (reponse.statusCode() != 200) {
-                throw new GeolocalisationException("Appel Nominatim échoué statut=" + reponse.statusCode());
+                throw new GeolocalisationException("Nominatim a répondu avec erreur: " + reponse.statusCode());
             }
 
-            // Parsing du JSON (racine = tableau de résultats)
-            JsonNode racine = mapper.readTree(reponse.body());
-            if (!racine.isArray() || racine.isEmpty()) return Optional.empty();
+            // 6. Lire le JSON de la réponse
+            JsonNode resultatJson = mapper.readTree(reponse.body());
+            // Nominatim renvoie un tableau [...] même s'il n'y a qu'un résultat
+            if (!resultatJson.isArray() || resultatJson.isEmpty()) {
+                return Optional.empty(); // tableau vide = pas trouvé
+            }
 
-            // Premier objet = meilleure correspondance
-            JsonNode premier = racine.get(0);
-            double lat = premier.path("lat").asDouble(); // path() évite NullPointer
-            double lon = premier.path("lon").asDouble();
-            String display = premier.path("display_name").asText();
+            // 7. Prendre le premier (et seul) résultat
+            JsonNode premierResultat = resultatJson.get(0);
+            double latitude = premierResultat.path("lat").asDouble();
+            double longitude = premierResultat.path("lon").asDouble();
+            String nomComplet = premierResultat.path("display_name").asText();
 
-            return Optional.of(new PointGeographique(lat, lon, display));
+            return Optional.of(new PointGeographique(latitude, longitude, nomComplet));
+            
         } catch (InterruptedException ie) {
-            // Thread interrompu : on restaure le flag d'interruption et on remonte une exception métier
+            // Le thread a été interrompu pendant l'attente
             Thread.currentThread().interrupt();
-            throw new GeolocalisationException("Requête interrompue", ie);
+            throw new GeolocalisationException("Opération interrompue", ie);
         } catch (IOException ioe) {
-            // Erreur réseau / timeout lecture : on CHOISIT de retourner vide (stratégie tolérante)
+            // Problème réseau (pas d'internet, timeout, etc.)
+            // Au lieu de planter, on dit "pas trouvé"
             return Optional.empty();
         }
     }
