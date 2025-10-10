@@ -20,3 +20,24 @@ service InternalCRM {
   i64 createLead(1: InternalLeadDTO lead),
   void deleteLead(1: InternalLeadDTO leadDto)
 }
+
+// Exceptions métier
+exception ThriftNoSuchLeadException {
+  1: string message
+}
+
+exception ThriftWrongDateFormatException {
+  1: string message
+}
+
+exception ThriftWrongOrderForDateException {
+  1: string message
+}
+
+exception ThriftWrongOrderForRevenueException {
+  1: string message
+}
+
+exception ThriftWrongStateException {
+  1: string message
+}

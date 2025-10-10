@@ -6,17 +6,17 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 
 /**
- * SERVEUR CRM INTERNE : démarre le service Thrift pour que d'autres programmes puissent s'y connecter
- * 
- * QUE FAIT CE PROGRAMME :
- *   1. Il démarre un serveur sur le port 9090 (par défaut)
- *   2. D'autres programmes peuvent envoyer des requêtes Thrift pour chercher des prospects
- *   3. Il reste ouvert jusqu'à ce qu'on l'arrête (Ctrl+C)
- * 
- * UTILISATION :
- *   ./gradlew :internalCRM:runInternalCRMServer
- *   ou avec un port spécifique :
- *   ./gradlew :internalCRM:runInternalCRMServer -Pport=8080
+ * SERVEUR CRM INTERNE — Serveur Thrift simple
+ *
+ * But : démarrer un serveur Thrift (socket TCP) pour exposer l'interface InternalCRM.
+ * Points importants :
+ * - port par défaut : 9090 (modifiable via -Pport)
+ * - ce serveur est de type simple (TSimpleServer) : utile pour tests locaux,
+ *   pas pour la mise en production (pas de montée en charge).
+ *
+ * Exemples :
+ *  ./gradlew :internalCRM:runInternalCRMServer
+ *  ./gradlew :internalCRM:runInternalCRMServer -Pport=8080
  */
 public class InternalCRMServer {
 

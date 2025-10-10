@@ -186,6 +186,15 @@ Adresse='tour eiffel paris' => lat=48.8584 lon=2.2945 nom=Tour Eiffel, Paris, Fr
 - ✅ Format spécial "Nom, Prénom"
 - ✅ Thread-safe (multi-clients)
 
+**Changements récents (module `internalCRM`) :**
+
+- Ajout de conversions centralisées : `utils/ConverterUtils` (Lead <-> InternalLeadDTO)
+- L'implémentation Thrift est maintenant dans `service/InternalServiceImpl` et lance des exceptions Thrift spécifiques pour les validations
+- Le projet contient un servlet Thrift (`service/ThriftInternalServiceServlet`) pour exposer le service via HTTP (endpoint `/thrift/internalcrm`)
+- Les fichiers de modèle (`model/*`) et les commentaires ont été traduits/clarifiés en français
+
+Voir `internalCRM/README.md` pour la documentation complète et les exemples.
+
 ### 🔗 [VirtualCRM](./virtualCRM/README.md)
 > API REST unifiée (à implémenter)
 

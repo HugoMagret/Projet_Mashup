@@ -3,15 +3,15 @@ package org.example.internal;
 import java.util.List;
 
 /**
- * DÉMO CRM INTERNE : test rapide du service sans réseau
- * 
- * QUE FAIT CE PROGRAMME :
- *   1. Il crée un prospect "Alice Martin" avec 120k€ de revenus en Loire-Atlantique
- *   2. Il cherche tous les prospects entre 100k€ et 130k€ en Loire-Atlantique
- *   3. Il affiche combien il en a trouvé et leurs noms
- * 
- * COMMANDE :
- *   ./gradlew :internalCRM:runInternalCRMDemo
+ * DÉMO CRM INTERNE — Exécution locale rapide
+ *
+ * But : montrer l'utilisation du handler sans serveur réseau.
+ * Ce programme :
+ * 1) crée un prospect d'exemple,
+ * 2) invoque findLeads(100000,130000,"Loire-Atlantique"),
+ * 3) affiche le nombre et les noms retournés.
+ *
+ * Exécution : ./gradlew :internalCRM:runInternalCRMDemo
  */
 public class InternalCRMDemo {
     public static void main(String[] args) throws Exception {
