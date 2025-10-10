@@ -48,6 +48,14 @@ internalCRM/
 | `InternalCRMDemo` | Démo locale | Test du handler sans réseau |
 | `InternalLeadDTO` | Structure prospect | Nom, revenus, adresse, région... (généré) |
 | `InternalCRM` | Interface service | Méthodes exposées (généré) |
+| `model/Lead` | Entité domaine | Représente un prospect (classe métier interne)
+| `model/LeadModel` | Interface modèle | Contrat d'accès au stockage (CRUD, recherches)
+| `model/LeadModelImpl` | Impl. mémoire | Implémentation thread-safe en mémoire
+| `model/exception/*` | Exceptions métier | Exceptions Java côté modèle (utiles en demo)
+| `utils/ConverterUtils` | Conversion | Convertit entre `Lead` (modèle) et `InternalLeadDTO` (Thrift)
+| `service/InternalServiceImpl` | Implémentation Thrift | Implémentation de `InternalCRM.Iface` qui valide et lance les exceptions Thrift
+| `service/ThriftInternalServiceServlet` | Servlet Thrift HTTP | Expose le service Thrift via HTTP (TServlet wrapper)
+| `service/ThriftHttpServletTemplate` | Template servlet | Petite classe réutilisable pour TServlet
 
 ## 🚀 Compilation et Exécution
 
@@ -208,6 +216,52 @@ result.getLastName();   // → ""
 ### 🔒 Thread-safety
 
 Le handler utilise `ConcurrentHashMap` et `AtomicLong`, il est donc **thread-safe** et peut gérer plusieurs clients simultanément.
+
+## 🛑 Exceptions Thrift ajoutées
+
+Le fichier Thrift (`src/main/thrift/internalcrm.thrift`) définit désormais plusieurs exceptions spécifiques. Elles sont générées dans `gen-java/` et doivent être gérées par les clients et le service :
+
+- `ThriftNoSuchLeadException` : lever lorsque l'entité demandée n'existe pas
+- `ThriftWrongDateFormatException` : lever lorsque le format de date fourni n'est pas ISO-8601
+- `ThriftWrongOrderForDateException` : lever lorsque `from` > `to` dans une recherche par date
+- `ThriftWrongOrderForRevenueException` : lever lorsque `low` > `high` dans une recherche par revenus
+- `ThriftWrongStateException` : lever lorsque la valeur de `state` est invalide (format ou liste blanche si applicable)
+
+Ces exceptions sont des types Thrift (générés) et sont lancées par `service/InternalServiceImpl` en cas d'erreurs de validation.
+
+## 🔌 ConverterUtils
+
+`utils/ConverterUtils` fournit deux méthodes utilitaires :
+
+- `toDto(Lead)` : transforme l'entité métier interne en `InternalLeadDTO` (prépare le format attendu par Thrift)
+- `fromDto(InternalLeadDTO)` : crée une instance `Lead` à partir d'un DTO Thrift
+
+Ces méthodes centralisent les règles de conversion (par ex. format des noms, nettoyage des champs) et évitent la duplication de logique dans le service.
+
+## 🌐 Servlet HTTP Thrift (optionnel)
+
+Le projet contient `service/ThriftInternalServiceServlet` : un wrapper qui instancie un `TServlet` (Thrift-over-HTTP). Cela permet d'héberger le service Thrift via un conteneur web (Tomcat, Jetty) au lieu d'un serveur socket.
+
+### Exemple d'usage (déploiement)
+
+1. Packager le module en JAR et déployer le `internalCRM` avec un conteneur servlet.
+2. Le endpoint exposé est `/thrift/internalcrm` (par défaut) ; envoyer des requêtes Thrift binaire vers cette URL.
+
+> Remarque : pour compiler le code servlet sans runtime servlet, la dépendance `javax.servlet:javax.servlet-api:4.0.1` est déclarée `compileOnly`.
+
+## 🔁 Notes de maintenance
+
+- Les classes générées par Thrift (`gen-java/`) ne doivent pas être modifiées à la main : régénérez-les depuis `src/main/thrift` si vous changez l'IDL.
+- Les modifications récentes ont ajouté : `ConverterUtils`, `service/InternalServiceImpl`, `service/ThriftInternalServiceServlet`, `service/ThriftHttpServletTemplate`, et les exceptions Thrift dans l'IDL.
+
+## ✅ Vérifications effectuées
+
+- Compilation `:internalCRM:build` réussie après ajustement de la dépendance servlet.
+- Correction d'un problème de source (`LeadModelImpl.java`) qui contenait une insertion accidentelle.
+
+---
+
+Si tu veux, j'ajoute un petit extrait d'exemple montrant comment appeler le servlet HTTP (curl ou client Thrift) ou je peux mettre à jour le README racine pour résumer ces changements.
 
 ## 🐛 Dépannage
 

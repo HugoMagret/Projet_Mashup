@@ -20,7 +20,7 @@ public class DemoGeolocalisation {
                 : String.join(" ", args);
 
         // Créer le client qui va sur internet
-        ClientNominatim client = new ClientNominatim();
+        ServiceGeolocalisation client = new ServiceGeolocalisation();
 
         // Demander la géolocalisation et afficher le résultat
         client.geolocaliserAdresse(adresse)

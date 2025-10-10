@@ -20,7 +20,7 @@ import java.util.Optional;
  * On utilise le service gratuit Nominatim d'OpenStreetMap.
  * EXEMPLE : "2 boulevard lavoisier angers" → lat=47.48, lon=-0.59
  */
-public class ClientNominatim {
+public class ServiceGeolocalisation {
 
     private static final String URL_BASE = "https://nominatim.openstreetmap.org";
     
@@ -42,7 +42,7 @@ public class ClientNominatim {
      * CONSTRUCTEUR 1 : on doit dire qui on est à Nominatim
      * @param userAgent exemple: "MonApp/1.0 (contact@monsite.com)"
      */
-    public ClientNominatim(String userAgent) {
+    public ServiceGeolocalisation(String userAgent) {
         this.userAgent = userAgent;
         // Active le mode simulation si on tape: 
         // GEO_OFFLINE=1 ./gradlew ... OU java -Dgeo.offline=true ...
@@ -54,7 +54,7 @@ public class ClientNominatim {
      * CONSTRUCTEUR 2 : version simple avec un nom bidon
      * ATTENTION : l'email est faux ! Dans un vrai projet, mets ton vrai contact.
      */
-    public ClientNominatim() { 
+    public ServiceGeolocalisation() { 
         this("ProjetMashup-Etudiant/1.0 (etudiant-test@example.com)"); 
     }
 
