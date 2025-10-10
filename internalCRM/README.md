@@ -238,6 +238,8 @@ Ces exceptions sont des types Thrift (générés) et sont lancées par `service/
 
 Ces méthodes centralisent les règles de conversion (par ex. format des noms, nettoyage des champs) et évitent la duplication de logique dans le service.
 
+Remarque importante : côté Thrift (DTO) la date `creationDate` est toujours une chaîne ISO-8601. Dans le modèle Java interne, la date est stockée en `java.util.Calendar` pour faciliter les comparaisons et les opérations sur les dates. `ConverterUtils` effectue la conversion String↔Calendar. Si une date fournie par un client n'est pas au format ISO attendu, le service renverra `ThriftWrongDateFormatException`.
+
 ## 🌐 Servlet HTTP Thrift (optionnel)
 
 Le projet contient `service/ThriftInternalServiceServlet` : un wrapper qui instancie un `TServlet` (Thrift-over-HTTP). Cela permet d'héberger le service Thrift via un conteneur web (Tomcat, Jetty) au lieu d'un serveur socket.

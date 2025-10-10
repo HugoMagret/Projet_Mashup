@@ -1,5 +1,6 @@
 package org.example.internal.model;
 
+import java.util.Calendar;
 import java.util.Objects;
 
 public class Lead {
@@ -12,7 +13,7 @@ public class Lead {
     private String postalCode;
     private String city;
     private String country;
-    private String creationDate; // ISO-8601
+    private Calendar creationDate; // utilisation de Calendar pour la date
     private String companyName;
     private String state;
 
@@ -37,8 +38,8 @@ public class Lead {
     public void setCity(String city) { this.city = city; }
     public String getCountry() { return country; }
     public void setCountry(String country) { this.country = country; }
-    public String getCreationDate() { return creationDate; }
-    public void setCreationDate(String creationDate) { this.creationDate = creationDate; }
+    public Calendar getCreationDate() { return creationDate; }
+    public void setCreationDate(Calendar creationDate) { this.creationDate = creationDate; }
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
     public String getState() { return state; }

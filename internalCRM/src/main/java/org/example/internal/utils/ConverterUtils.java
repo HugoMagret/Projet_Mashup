@@ -3,14 +3,24 @@ package org.example.internal.utils;
 import org.example.internal.InternalLeadDTO;
 import org.example.internal.model.Lead;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Utilitaire de conversion entre le modèle métier `Lead` et le DTO Thrift `InternalLeadDTO`.
  * Les méthodes sont simples et copies les champs un par un.
  */
 public final class ConverterUtils {
+    /**
+     * Utilitaires de conversion entre le modèle Java interne (Lead)
+     * et les DTO générés par Thrift (InternalLeadDTO).
+     * Les méthodes font une copie champ-à-champ simple.
+     */
     private ConverterUtils() {}
 
     // Convertit un objet métier en DTO Thrift
@@ -24,7 +34,7 @@ public final class ConverterUtils {
         dto.setPostalCode(lead.getPostalCode());
         dto.setCity(lead.getCity());
         dto.setCountry(lead.getCountry());
-        dto.setCreationDate(lead.getCreationDate());
+        dto.setCreationDate(calendarToIsoString(lead.getCreationDate()));
         dto.setCompanyName(lead.getCompanyName());
         dto.setState(lead.getState());
         return dto;
@@ -41,16 +51,43 @@ public final class ConverterUtils {
         l.setPostalCode(dto.getPostalCode());
         l.setCity(dto.getCity());
         l.setCountry(dto.getCountry());
-        l.setCreationDate(dto.getCreationDate());
+        l.setCreationDate(isoStringToCalendar(dto.getCreationDate()));
         l.setCompanyName(dto.getCompanyName());
         l.setState(dto.getState());
         return l;
     }
+
+    // Convertit une liste de Lead en liste de DTO
 
     public static List<InternalLeadDTO> toDtoList(List<Lead> leads) {
         List<InternalLeadDTO> out = new ArrayList<>();
         if (leads == null) return out;
         for (Lead l : leads) out.add(toDto(l));
         return out;
+    }
+
+    // ----- Conversion ISO <-> Calendar
+    private static final String ISO_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+
+    public static Calendar isoStringToCalendar(String iso) {
+        if (iso == null) return null;
+        SimpleDateFormat sdf = new SimpleDateFormat(ISO_PATTERN);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        try {
+            Date d = sdf.parse(iso);
+            Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            c.setTime(d);
+            return c;
+        } catch (ParseException e) {
+            // En cas d'échec de parsing, retourner null — le modèle doit valider
+            return null;
+        }
+    }
+
+    public static String calendarToIsoString(Calendar c) {
+        if (c == null) return null;
+        SimpleDateFormat sdf = new SimpleDateFormat(ISO_PATTERN);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return sdf.format(c.getTime());
     }
 }

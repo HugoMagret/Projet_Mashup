@@ -1,8 +1,11 @@
 package org.example.internal;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import org.example.internal.ThriftNoSuchLeadException;
+import org.example.internal.ThriftWrongDateFormatException;
+import org.example.internal.ThriftWrongOrderForDateException;
+import org.example.internal.ThriftWrongOrderForRevenueException;
+import org.example.internal.ThriftWrongStateException;
 
 
 /**
@@ -19,6 +22,10 @@ import java.util.concurrent.atomic.AtomicLong;
  *   → tous les prospects entre 50k€ et 150k€ en Loire-Atlantique
  */
 public class InternalCRMHandler implements InternalCRM.Iface {
+    /**
+     * Handler utilisé par le serveur et la demo.
+     * Il délègue au modèle métier et convertit/propage les exceptions Thrift.
+     */
 
     // Déléguer vers le modèle métier centralisé
     private final org.example.internal.model.LeadModel model = org.example.internal.model.LeadModelFactory.getModel();
@@ -36,41 +43,63 @@ public class InternalCRMHandler implements InternalCRM.Iface {
         exemple.setCity("Angers");
         exemple.setState("Maine-et-Loire");
         exemple.setCountry("France");
-        exemple.setCreationDate("2024-09-01T10:00:00Z");
-        createLead(exemple);
+    // initialisation en string -> converti lors de createLead via ConverterUtils
+    exemple.setCreationDate("2024-09-01T10:00:00Z");
+        try {
+            createLead(exemple);
+        } catch (ThriftWrongStateException e) {
+            // Ignorer pour la démo si l'initialisation échoue
+        }
     }
 
     @Override
-    public List<org.example.internal.InternalLeadDTO> findLeads(double lowAnnualRevenue, double highAnnualRevenue, String province) {
-        List<org.example.internal.model.Lead> leads = model.findByRevenueRange(lowAnnualRevenue, highAnnualRevenue, province);
-        return org.example.internal.utils.ConverterUtils.toDtoList(leads);
+    public List<org.example.internal.InternalLeadDTO> findLeads(double lowAnnualRevenue, double highAnnualRevenue, String province)
+            throws ThriftWrongOrderForRevenueException, ThriftWrongStateException {
+        // Appel direct au modèle. Les erreurs sont converties en exceptions Thrift.
+        try {
+            List<org.example.internal.model.Lead> leads = model.findLeads(lowAnnualRevenue, highAnnualRevenue, province);
+            return org.example.internal.utils.ConverterUtils.toDtoList(leads);
+        } catch (org.example.internal.model.exception.WrongOrderForRevenueException e) {
+            throw new ThriftWrongOrderForRevenueException(e.getMessage());
+        } catch (org.example.internal.model.exception.WrongStateException e) {
+            throw new ThriftWrongStateException(e.getMessage());
+        }
     }
 
     @Override
-    public List<org.example.internal.InternalLeadDTO> findLeadsByDate(String fromIso, String toIso) {
-        List<org.example.internal.model.Lead> leads = model.findByDateRange(fromIso, toIso);
-        return org.example.internal.utils.ConverterUtils.toDtoList(leads);
+    public List<org.example.internal.InternalLeadDTO> findLeadsByDate(String fromIso, String toIso)
+            throws ThriftWrongDateFormatException, ThriftWrongOrderForDateException {
+        try {
+            java.util.Calendar from = org.example.internal.utils.ConverterUtils.isoStringToCalendar(fromIso);
+            java.util.Calendar to = org.example.internal.utils.ConverterUtils.isoStringToCalendar(toIso);
+            if (fromIso != null && from == null) throw new ThriftWrongDateFormatException("Format de date invalide: " + fromIso);
+            if (toIso != null && to == null) throw new ThriftWrongDateFormatException("Format de date invalide: " + toIso);
+            List<org.example.internal.model.Lead> leads = model.findLeadsByDate(from, to);
+            return org.example.internal.utils.ConverterUtils.toDtoList(leads);
+        } catch (org.example.internal.model.exception.WrongDateFormatException e) {
+            throw new ThriftWrongDateFormatException(e.getMessage());
+        } catch (org.example.internal.model.exception.WrongOrderForDateException e) {
+            throw new ThriftWrongOrderForDateException(e.getMessage());
+        }
     }
 
     @Override
-    public long createLead(org.example.internal.InternalLeadDTO lead) {
+    public long createLead(org.example.internal.InternalLeadDTO lead) throws ThriftWrongStateException {
         org.example.internal.model.Lead l = org.example.internal.utils.ConverterUtils.toModel(lead);
-        return model.createLead(l);
+        try {
+            return model.createLead(l);
+        } catch (org.example.internal.model.exception.WrongStateException e) {
+            throw new ThriftWrongStateException(e.getMessage());
+        }
     }
 
     @Override
-    public void deleteLead(org.example.internal.InternalLeadDTO leadDto) {
-        // Supprimer par correspondance de champs (même logique que InternalServiceImpl)
+    public void deleteLead(org.example.internal.InternalLeadDTO leadDto) throws ThriftNoSuchLeadException {
         org.example.internal.model.Lead template = org.example.internal.utils.ConverterUtils.toModel(leadDto);
-        List<org.example.internal.model.Lead> all = model.findByRevenueRange(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
-        for (org.example.internal.model.Lead candidate : all) {
-            if (equalsWithoutId(candidate, template)) {
-                try {
-                    model.deleteLead(candidate.getId());
-                } catch (org.example.internal.model.exception.NoSuchLeadException e) {
-                    // ignore
-                }
-            }
+        try {
+            model.deleteLead(template);
+        } catch (org.example.internal.model.exception.NoSuchLeadException e) {
+            throw new ThriftNoSuchLeadException(e.getMessage());
         }
     }
 
@@ -83,10 +112,16 @@ public class InternalCRMHandler implements InternalCRM.Iface {
                 && safeEq(a.getPostalCode(), b.getPostalCode())
                 && safeEq(a.getCity(), b.getCity())
                 && safeEq(a.getCountry(), b.getCountry())
-                && safeEq(a.getCreationDate(), b.getCreationDate())
+                && safeCalEq(a.getCreationDate(), b.getCreationDate())
                 && safeEq(a.getCompanyName(), b.getCompanyName())
                 && safeEq(a.getState(), b.getState());
     }
 
     private boolean safeEq(String x, String y) { if (x == null) return y == null; return x.equals(y); }
+
+    private boolean safeCalEq(java.util.Calendar a, java.util.Calendar b) {
+        if (a == null) return b == null;
+        if (b == null) return false;
+        return a.getTimeInMillis() == b.getTimeInMillis();
+    }
 }
