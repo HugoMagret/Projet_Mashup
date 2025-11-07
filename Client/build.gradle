@@ -12,5 +12,5 @@ dependencies {
 }
 
 application {
-    mainClass = 'org.example.client.ClientApp'
+    mainClass = 'org.example.client.ClientGui'
 }
