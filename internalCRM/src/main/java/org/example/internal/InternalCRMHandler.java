@@ -31,25 +31,31 @@ public class InternalCRMHandler implements InternalCRM.Iface {
     private final org.example.internal.model.LeadModel model = org.example.internal.model.LeadModelFactory.getModel();
 
     public InternalCRMHandler() {
-        // Initialiser avec un exemple pour les démos (même comportement qu'avant)
-        org.example.internal.InternalLeadDTO exemple = new org.example.internal.InternalLeadDTO();
-        exemple.setFirstName("Jean");
-        exemple.setLastName("Dupont");
-        exemple.setCompanyName("Acme");
-        exemple.setAnnualRevenue(50000.0);
-        exemple.setPhone("+33123456789");
-        exemple.setStreet("1 rue Exemple");
-        exemple.setPostalCode("49100");
-        exemple.setCity("Angers");
-        exemple.setState("Maine-et-Loire");
-        exemple.setCountry("France");
-    // initialisation en string -> converti lors de createLead via ConverterUtils
-    exemple.setCreationDate("2024-09-01T10:00:00Z");
-        try {
-            createLead(exemple);
-        } catch (ThriftWrongStateException e) {
-            // Ignorer pour la démo si l'initialisation échoue
+        // Charger les données initiales (environ 50 prospects)
+        List<InternalLeadDTO> prospectsInitiaux = InitialDataLoader.genererProspectsInitiaux();
+        
+        System.out.println("[InternalCRM] Chargement de " + prospectsInitiaux.size() + " prospects initiaux...");
+        int compteur = 0;
+        
+        for (InternalLeadDTO prospect : prospectsInitiaux) {
+            try {
+                createLead(prospect);
+                compteur++;
+            } catch (ThriftWrongStateException e) {
+                // Log l'erreur mais continue le chargement
+                System.err.println("[ERREUR] Impossible de créer le prospect " + 
+                    prospect.getFirstName() + " " + prospect.getLastName() + 
+                    " : État invalide - " + e.getMessage());
+            } catch (Exception e) {
+                // Capture toute autre exception inattendue
+                System.err.println("[ERREUR] Erreur inattendue lors de la création du prospect " + 
+                    prospect.getFirstName() + " " + prospect.getLastName() + 
+                    " : " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            }
         }
+        
+        System.out.println("[InternalCRM] ✓ " + compteur + "/" + prospectsInitiaux.size() + 
+            " prospects chargés avec succès");
     }
 
     @Override
@@ -66,6 +72,17 @@ public class InternalCRMHandler implements InternalCRM.Iface {
         }
     }
 
+    /**
+     * Recherche les prospects crees entre deux dates.
+     * 
+     * Format ISO-8601 requis pour les dates :
+     * - Format : "yyyy-MM-dd'T'HH:mm:ss'Z'"
+     * - Exemple : "2024-09-15T10:00:00Z"
+     * - Z indique le fuseau UTC (temps universel)
+     * 
+     * Lance ThriftWrongDateFormatException si le format est invalide.
+     * Lance ThriftWrongOrderForDateException si fromIso > toIso.
+     */
     @Override
     public List<org.example.internal.InternalLeadDTO> findLeadsByDate(String fromIso, String toIso)
             throws ThriftWrongDateFormatException, ThriftWrongOrderForDateException {
@@ -83,6 +100,12 @@ public class InternalCRMHandler implements InternalCRM.Iface {
         }
     }
 
+    /**
+     * Cree un nouveau prospect et retourne son ID unique.
+     * 
+     * Retour : i64 (long en Java) = entier 64 bits permettant
+     *          de generer des milliards d'IDs uniques sans depassement
+     */
     @Override
     public long createLead(org.example.internal.InternalLeadDTO lead) throws ThriftWrongStateException {
         org.example.internal.model.Lead l = org.example.internal.utils.ConverterUtils.toModel(lead);
