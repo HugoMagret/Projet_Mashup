@@ -2,28 +2,50 @@ package org.example.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.ContentType;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.Locale;
 import java.util.Vector;
 
 public class ClientGui extends JFrame {
 
-    private final JTextField tfBaseUrl = new JTextField("http://localhost:8080");
-    private final JTextField tfRevMin  = new JTextField("10000");
-    private final JTextField tfRevMax  = new JTextField("50000");
-    private final JTextField tfProv    = new JTextField("Maine-et-Loire");
-    private final JButton btnSearch    = new JButton("Rechercher");
+    // URL fixe de ton VirtualCRM (à adapter si besoin)
+    private static final String BASE_URL = "http://localhost:8080";
 
+    // Champs de recherche (tu peux en ajouter)
+    private final JTextField tfFirstName   = new JTextField();
+    private final JTextField tfLastName    = new JTextField();
+    private final JTextField tfCompanyName = new JTextField();
+    private final JTextField tfRevMin      = new JTextField("10000");
+    private final JTextField tfRevMax      = new JTextField("50000");
+    private final JTextField tfCity        = new JTextField("Angers");
+    private final JTextField tfState       = new JTextField("Maine-et-Loire");
+    private final JTextField tfCountry     = new JTextField("France");
+
+    private final JButton btnSearch = new JButton("Rechercher");
+
+    // On prévoit directement les colonnes latitude/longitude
     private final DefaultTableModel tableModel =
-            new DefaultTableModel(new Object[]{"Nom", "Prénom", "Société", "Revenu (€)"}, 0);
+            new DefaultTableModel(
+                    new Object[]{
+                            "Nom", "Prénom", "Société",
+                            "Revenu (€)", "Ville", "État/Province", "Pays",
+                            "Latitude", "Longitude"
+                    },
+                    0
+            );
+
     private final JTable table = new JTable(tableModel);
 
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -31,38 +53,89 @@ public class ClientGui extends JFrame {
     public ClientGui() {
         super("VirtualCRM - Client GUI");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout(10,10));
-        ((JComponent)getContentPane()).setBorder(new EmptyBorder(10,10,10,10));
+        setLayout(new BorderLayout(10, 10));
+        ((JComponent) getContentPane()).setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // Barre de paramètres
+        // -------- Barre de paramètres (formulaire) ----------
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(4,4,4,4);
-        c.gridy = 0; c.gridx = 0; c.anchor = GridBagConstraints.LINE_END; form.add(new JLabel("Base URL :"), c);
-        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; form.add(tfBaseUrl, c);
+        c.insets = new Insets(4, 4, 4, 4);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
 
-        c.gridy = 1; c.gridx = 0; c.weightx = 0; c.fill = GridBagConstraints.NONE; form.add(new JLabel("Revenu min :"), c);
-        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; form.add(tfRevMin, c);
+        int row = 0;
 
-        c.gridy = 2; c.gridx = 0; c.weightx = 0; c.fill = GridBagConstraints.NONE; form.add(new JLabel("Revenu max :"), c);
-        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; form.add(tfRevMax, c);
+        // Ligne 1 : Prénom
+        c.gridy = row; c.gridx = 0; c.anchor = GridBagConstraints.LINE_END; c.weightx = 0;
+        form.add(new JLabel("Prénom :"), c);
+        c.gridx = 1; c.anchor = GridBagConstraints.LINE_START; c.weightx = 1.0;
+        form.add(tfFirstName, c);
+        row++;
 
-        c.gridy = 3; c.gridx = 0; c.weightx = 0; c.fill = GridBagConstraints.NONE; form.add(new JLabel("Province :"), c);
-        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; form.add(tfProv, c);
+        // Ligne 2 : Nom
+        c.gridy = row; c.gridx = 0; c.anchor = GridBagConstraints.LINE_END; c.weightx = 0;
+        form.add(new JLabel("Nom :"), c);
+        c.gridx = 1; c.anchor = GridBagConstraints.LINE_START; c.weightx = 1.0;
+        form.add(tfLastName, c);
+        row++;
 
-        c.gridy = 4; c.gridx = 1; c.fill = GridBagConstraints.NONE; c.weightx = 0; c.anchor = GridBagConstraints.LINE_START;
+        // Ligne 3 : Société
+        c.gridy = row; c.gridx = 0; c.anchor = GridBagConstraints.LINE_END; c.weightx = 0;
+        form.add(new JLabel("Société :"), c);
+        c.gridx = 1; c.anchor = GridBagConstraints.LINE_START; c.weightx = 1.0;
+        form.add(tfCompanyName, c);
+        row++;
+
+        // Ligne 4 : Revenu min
+        c.gridy = row; c.gridx = 0; c.anchor = GridBagConstraints.LINE_END; c.weightx = 0;
+        form.add(new JLabel("Revenu min :"), c);
+        c.gridx = 1; c.anchor = GridBagConstraints.LINE_START; c.weightx = 1.0;
+        form.add(tfRevMin, c);
+        row++;
+
+        // Ligne 5 : Revenu max
+        c.gridy = row; c.gridx = 0; c.anchor = GridBagConstraints.LINE_END; c.weightx = 0;
+        form.add(new JLabel("Revenu max :"), c);
+        c.gridx = 1; c.anchor = GridBagConstraints.LINE_START; c.weightx = 1.0;
+        form.add(tfRevMax, c);
+        row++;
+
+        // Ligne 6 : Ville
+        c.gridy = row; c.gridx = 0; c.anchor = GridBagConstraints.LINE_END; c.weightx = 0;
+        form.add(new JLabel("Ville :"), c);
+        c.gridx = 1; c.anchor = GridBagConstraints.LINE_START; c.weightx = 1.0;
+        form.add(tfCity, c);
+        row++;
+
+        // Ligne 7 : État/Province
+        c.gridy = row; c.gridx = 0; c.anchor = GridBagConstraints.LINE_END; c.weightx = 0;
+        form.add(new JLabel("État / Province :"), c);
+        c.gridx = 1; c.anchor = GridBagConstraints.LINE_START; c.weightx = 1.0;
+        form.add(tfState, c);
+        row++;
+
+        // Ligne 8 : Pays
+        c.gridy = row; c.gridx = 0; c.anchor = GridBagConstraints.LINE_END; c.weightx = 0;
+        form.add(new JLabel("Pays :"), c);
+        c.gridx = 1; c.anchor = GridBagConstraints.LINE_START; c.weightx = 1.0;
+        form.add(tfCountry, c);
+        row++;
+
+        // Ligne 9 : bouton Rechercher
+        c.gridy = row; c.gridx = 1; c.anchor = GridBagConstraints.LINE_START; c.weightx = 0;
+        c.fill = GridBagConstraints.NONE;
         form.add(btnSearch, c);
 
         add(form, BorderLayout.NORTH);
 
-        // Tableau de résultats
+        // -------- Tableau de résultats ----------
         table.setFillsViewportHeight(true);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         // Action bouton
         btnSearch.addActionListener(e -> runQuery());
 
-        setSize(700, 420);
+        setSize(900, 500);
         setLocationRelativeTo(null);
     }
 
@@ -70,28 +143,53 @@ public class ClientGui extends JFrame {
         btnSearch.setEnabled(false);
         tableModel.setRowCount(0);
 
-        final String baseUrl    = tfBaseUrl.getText().trim().replaceAll("/+$", "");
-        final String revenueMin = tfRevMin.getText().trim();
-        final String revenueMax = tfRevMax.getText().trim();
-        final String province   = tfProv.getText().trim();
+        final String firstName   = tfFirstName.getText().trim();
+        final String lastName    = tfLastName.getText().trim();
+        final String companyName = tfCompanyName.getText().trim();
+        final String revenueMin  = tfRevMin.getText().trim();
+        final String revenueMax  = tfRevMax.getText().trim();
+        final String city        = tfCity.getText().trim();
+        final String state       = tfState.getText().trim();
+        final String country     = tfCountry.getText().trim();
 
-        // Validation très simple
-        if (baseUrl.isEmpty() || revenueMin.isEmpty() || revenueMax.isEmpty() || province.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Veuillez renseigner tous les champs.",
-                    "Champs manquants", JOptionPane.WARNING_MESSAGE);
-            btnSearch.setEnabled(true);
-            return;
-        }
-
-        // Requête réseau en arrière-plan
+        // On accepte que tout soit vide : dans ce cas Virtual retournera "tous les leads" ou appliquera sa logique
         new SwingWorker<JsonNode, Void>() {
             @Override
             protected JsonNode doInBackground() throws Exception {
-                String url = String.format("%s/virtualcrm/findLeads?revenueMin=%s&revenueMax=%s&province=%s",
-                        baseUrl, encode(revenueMin), encode(revenueMax), encode(province));
+                // Construction de l’objet JSON de critères
+                ObjectNode criteria = mapper.createObjectNode();
+
+                if (!firstName.isEmpty())   criteria.put("firstName", firstName);
+                if (!lastName.isEmpty())    criteria.put("lastName", lastName);
+                if (!companyName.isEmpty()) criteria.put("companyName", companyName);
+                if (!city.isEmpty())        criteria.put("city", city);
+                if (!state.isEmpty())       criteria.put("state", state);
+                if (!country.isEmpty())     criteria.put("country", country);
+
+                // Revenus : on essaie de les parser si non vides
+                if (!revenueMin.isEmpty()) {
+                    try {
+                        criteria.put("revenueMin", Double.parseDouble(revenueMin));
+                    } catch (NumberFormatException e) {
+                        throw new RuntimeException("Revenu min invalide : " + revenueMin);
+                    }
+                }
+                if (!revenueMax.isEmpty()) {
+                    try {
+                        criteria.put("revenueMax", Double.parseDouble(revenueMax));
+                    } catch (NumberFormatException e) {
+                        throw new RuntimeException("Revenu max invalide : " + revenueMax);
+                    }
+                }
+
+                String url = BASE_URL + "/virtualcrm/findLeads";
 
                 try (CloseableHttpClient http = HttpClients.createDefault()) {
-                    HttpGet request = new HttpGet(url);
+                    HttpPost request = new HttpPost(url);
+                    String jsonBody = mapper.writeValueAsString(criteria);
+
+                    request.setEntity(new StringEntity(jsonBody, ContentType.APPLICATION_JSON));
+                    request.setHeader("Accept", "application/json");
 
                     String responseBody = http.execute(request, httpResponse -> {
                         if (httpResponse.getCode() != HttpStatus.SC_OK) {
@@ -115,17 +213,39 @@ public class ClientGui extends JFrame {
                                 "Résultat", JOptionPane.INFORMATION_MESSAGE);
                         return;
                     }
-                    // Remplir le tableau
+
+                    Locale localeFr = Locale.FRANCE;
+
                     for (JsonNode lead : leads) {
-                        String firstName = lead.path("firstName").asText("-");
-                        String lastName  = lead.path("lastName").asText("-");
-                        String company   = lead.path("company").asText("-");
-                        String revenue   = lead.path("annualRevenue").asText("-");
-                        Vector<String> row = new Vector<>();
+                        String firstName   = lead.path("firstName").asText("-");
+                        String lastName    = lead.path("lastName").asText("-");
+                        String companyName = lead.path("companyName").asText("-");
+                        double revenueVal  = lead.path("annualRevenue").asDouble(0.0);
+                        String city        = lead.path("city").asText("-");
+                        String state       = lead.path("state").asText("-");
+                        String country     = lead.path("country").asText("-");
+
+                        double latVal = lead.path("latitude").asDouble(Double.NaN);
+                        double lonVal = lead.path("longitude").asDouble(Double.NaN);
+
+                        String revenueStr = (revenueVal <= 0.0)
+                                ? "-"
+                                : String.format(localeFr, "%.2f", revenueVal);
+
+                        String latStr = Double.isNaN(latVal) ? "-" : String.format(localeFr, "%.6f", latVal);
+                        String lonStr = Double.isNaN(lonVal) ? "-" : String.format(localeFr, "%.6f", lonVal);
+
+                        Vector<Object> row = new Vector<>();
                         row.add(lastName);
                         row.add(firstName);
-                        row.add(company);
-                        row.add(revenue);
+                        row.add(companyName);
+                        row.add(revenueStr);
+                        row.add(city);
+                        row.add(state);
+                        row.add(country);
+                        row.add(latStr);
+                        row.add(lonStr);
+
                         tableModel.addRow(row);
                     }
                 } catch (Exception ex) {
@@ -137,15 +257,6 @@ public class ClientGui extends JFrame {
                 }
             }
         }.execute();
-    }
-
-    // Encodage très simple pour l’URL (espace → %20, etc.)
-    private static String encode(String s) {
-        try {
-            return java.net.URLEncoder.encode(s, java.nio.charset.StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            return s;
-        }
     }
 
     public static void main(String[] args) {
