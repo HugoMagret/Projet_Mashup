@@ -66,6 +66,17 @@ public class InternalCRMHandler implements InternalCRM.Iface {
         }
     }
 
+    /**
+     * Recherche les prospects crees entre deux dates.
+     * 
+     * Format ISO-8601 requis pour les dates :
+     * - Format : "yyyy-MM-dd'T'HH:mm:ss'Z'"
+     * - Exemple : "2024-09-15T10:00:00Z"
+     * - Z indique le fuseau UTC (temps universel)
+     * 
+     * Lance ThriftWrongDateFormatException si le format est invalide.
+     * Lance ThriftWrongOrderForDateException si fromIso > toIso.
+     */
     @Override
     public List<org.example.internal.InternalLeadDTO> findLeadsByDate(String fromIso, String toIso)
             throws ThriftWrongDateFormatException, ThriftWrongOrderForDateException {
@@ -83,6 +94,12 @@ public class InternalCRMHandler implements InternalCRM.Iface {
         }
     }
 
+    /**
+     * Cree un nouveau prospect et retourne son ID unique.
+     * 
+     * Retour : i64 (long en Java) = entier 64 bits permettant
+     *          de generer des milliards d'IDs uniques sans depassement
+     */
     @Override
     public long createLead(org.example.internal.InternalLeadDTO lead) throws ThriftWrongStateException {
         org.example.internal.model.Lead l = org.example.internal.utils.ConverterUtils.toModel(lead);

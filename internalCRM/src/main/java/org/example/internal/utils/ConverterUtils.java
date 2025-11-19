@@ -66,9 +66,13 @@ public final class ConverterUtils {
         return out;
     }
 
-    // ----- Conversion ISO <-> Calendar
+    // ----- Conversion ISO-8601 <-> Calendar
     private static final String ISO_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
+    /**
+     * Convertit une chaine ISO-8601 en Calendar Java.
+     * Retourne null si le format est invalide.
+     */
     public static Calendar isoStringToCalendar(String iso) {
         if (iso == null) return null;
         SimpleDateFormat sdf = new SimpleDateFormat(ISO_PATTERN);
@@ -84,6 +88,10 @@ public final class ConverterUtils {
         }
     }
 
+    /**
+     * Convertit un Calendar Java en chaine ISO-8601.
+     * Format de sortie : "yyyy-MM-dd'T'HH:mm:ss'Z'" (UTC)
+     */
     public static String calendarToIsoString(Calendar c) {
         if (c == null) return null;
         SimpleDateFormat sdf = new SimpleDateFormat(ISO_PATTERN);
