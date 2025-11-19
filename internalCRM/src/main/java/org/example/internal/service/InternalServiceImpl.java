@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Service Thrift (implémentation) pour InternalCRM.
  *
- * Rôle simple et concret :
+ * Rôle du service :
  * - recevoir des DTO Thrift (InternalLeadDTO)
  * - convertir en entités métier (Lead) via ConverterUtils
  * - appeler le modèle métier (LeadModel)
@@ -71,6 +71,7 @@ public class InternalServiceImpl implements InternalCRM.Iface {
     /**
      * createLead : convertit le DTO en Lead et demande au modèle de le créer.
      * Retour : id généré (i64)
+     *   - i64 = type Thrift pour entier 64 bits signe (long en Java)
      */
     @Override
     public long createLead(InternalLeadDTO lead) throws org.example.internal.ThriftWrongStateException {
