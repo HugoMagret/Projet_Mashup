@@ -3,6 +3,18 @@ package org.example.internal.model;
 import java.util.Calendar;
 import java.util.Objects;
 
+/**
+ * Entité métier représentant un prospect (Lead) dans le CRM interne.
+ * 
+ * Cette classe stocke toutes les informations d'un client potentiel :
+ * - Identité : prénom, nom, entreprise
+ * - Contact : téléphone, adresse complète
+ * - Commercial : revenu annuel estimé, région
+ * - Date de création : stockée en Calendar (conversion ISO faite par ConverterUtils)
+ * 
+ * IMPORTANT : Les égalités (equals/hashCode) se basent UNIQUEMENT sur l'ID.
+ * Deux leads avec le même ID sont considérés identiques, même si leurs données diffèrent.
+ */
 public class Lead {
     private Long id;
     private String firstName;

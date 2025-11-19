@@ -14,25 +14,43 @@ import java.time.Duration;
 import java.util.Optional;
 
 /**
- * GÉOLOCALISATION : transforme une adresse écrite (ex: "10 rue de la Paix Paris") 
- * en coordonnées GPS (latitude, longitude).
+ * SERVICE DE GEOLOCALISATION : transforme une adresse textuelle en coordonnees GPS
  * 
- * On utilise le service gratuit Nominatim d'OpenStreetMap.
- * EXEMPLE : "2 boulevard lavoisier angers" → lat=47.48, lon=-0.59
+ * Utilise l'API REST Nominatim d'OpenStreetMap (service gratuit sans cle API).
+ * 
+ * EXEMPLE D'UTILISATION :
+ *   ServiceGeolocalisation service = new ServiceGeolocalisation();
+ *   Optional<PointGeographique> resultat = service.geolocaliserAdresse("2 boulevard lavoisier angers");
+ *   if (resultat.isPresent()) {
+ *       System.out.println("Latitude: " + resultat.get().latitude());
+ *       System.out.println("Longitude: " + resultat.get().longitude());
+ *   }
+ * 
+ * FONCTIONNEMENT :
+ *   1. Encode l'adresse pour l'URL (remplace espaces par %20, etc.)
+ *   2. Appelle https://nominatim.openstreetmap.org/search?format=json&limit=1&q=adresse
+ *   3. Parse la reponse JSON
+ *   4. Extrait latitude, longitude, nom complet
+ *   5. Retourne Optional<PointGeographique> (vide si adresse introuvable)
+ * 
+ * MODE HORS LIGNE :
+ *   Active avec GEO_OFFLINE=1 ou -Dgeo.offline=true
+ *   Retourne des coordonnees simulees pour "lavoisier angers"
  */
 public class ServiceGeolocalisation {
 
     private static final String URL_BASE = "https://nominatim.openstreetmap.org";
     
-    // Outil pour faire des requêtes HTTP (connexion internet)
+    // HttpClient = client HTTP moderne de Java 11+ (supporte HTTP/1.1 et HTTP/2)
     private final HttpClient httpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(5)) // 5 secondes max pour se connecter
+        .connectTimeout(Duration.ofSeconds(5)) // Timeout de connexion : 5 secondes max
         .build();
     
-    // Outil pour lire le JSON que renvoie Nominatim
+    // ObjectMapper = outil Jackson pour parser JSON
     private final ObjectMapper mapper = new ObjectMapper();
     
-    // Nom du logiciel + email (obligatoire pour Nominatim, sinon ils bloquent)
+    // User-Agent = identification de l'application (OBLIGATOIRE pour Nominatim)
+    // Format : "NomApp/Version (email.contact@exemple.com)"
     private final String userAgent;
     
     // Si true = pas d'internet, on simule avec des valeurs bidons
@@ -51,8 +69,9 @@ public class ServiceGeolocalisation {
     }
 
     /**
-     * CONSTRUCTEUR 2 : version simple avec un nom bidon
-     * ATTENTION : l'email est faux ! Dans un vrai projet, mets ton vrai contact.
+     * Constructeur par defaut avec User-Agent generique.
+     * 
+     * ATTENTION : L'email est fictif ! Dans un vrai projet, mettre un vrai contact.
      */
     public ServiceGeolocalisation() { 
         this("ProjetMashup-Etudiant/1.0 (etudiant-test@example.com)"); 
