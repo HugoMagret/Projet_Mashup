@@ -4,6 +4,7 @@ package org.example.service;
 import org.example.client.GeoClient;
 import org.example.client.InternalCRMClient;
 import org.example.client.SalesforceClient;
+import org.example.dto.GeographicPointDTO;
 import org.example.dto.VirtualLeadDTO;
 import org.example.util.LeadMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +33,9 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
         this.geoClient = geoClient;
     }*/
     @Autowired
-    public VirtualCRMServiceImpl(InternalCRMClient internalCRMClient) {
+    public VirtualCRMServiceImpl(InternalCRMClient internalCRMClient, SalesforceClient salesforceClient) {
         this.internalCRMClient = internalCRMClient;
-        this.salesforceClient = null;
+        this.salesforceClient = salesforceClient;
         this.geoClient = null;
     }
 
@@ -50,8 +51,9 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
         List<VirtualLeadDTO> internalLeads = internalCRMClient.findLeads(minRevenue, maxRevenue, province);
 
         // Get leads "Salesforce"
+        List<VirtualLeadDTO> salesforceLeads = salesforceClient.findLeads(minRevenue, maxRevenue, province);
+
         /*
-        List<VirtualLeadDTO> salesforceLeads = salesforceClient.findLeads(minRevenue, maxRevenue, province)
                 .stream()
                 .map(LeadMapper::toVirtualLead)
                 .collect(Collectors.toList());
@@ -59,20 +61,25 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
 
         List<VirtualLeadDTO> allLeads = new ArrayList<>();
         allLeads.addAll(internalLeads);
-        //allLeads.addAll(salesforceLeads);
-        /*
-        allLeads.forEach(lead -> {
-            try {
-                lead.setGeographicPoint(geoClient.getCoordinates(lead.getFullAddress()));
-            } catch (Exception e) {
-                lead.setGeographicPoint(null);
-            }
-        });
-        */
-        allLeads.sort(Comparator.comparingDouble(VirtualLeadDTO::getAnnualRevenue).reversed());
+        allLeads.addAll(salesforceLeads);
 
+        enrichWithGeoAndSort(allLeads);
         return allLeads;
     }
+
+
+    private void enrichWithGeoAndSort(List<VirtualLeadDTO> leads) {
+        for (VirtualLeadDTO lead : leads) {
+            
+            String address = lead.getFullAdress();
+            // NULL n'est pas géré car n'est pas censé casser la suite.
+            GeographicPointDTO point = geoClient.geocode(address);
+            lead.setGeographicPoint(point); 
+        }
+
+        leads.sort(Comparator.comparing(VirtualLeadDTO::getAnnualRevenue).reversed());
+    }
+
 
     // TEMP
     @Override

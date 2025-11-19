@@ -48,6 +48,10 @@ public class VirtualLeadDTO {
     public String getCreationDate() { return creationDate; }
     public void setCreationDate(String creationDate) { this.creationDate = creationDate; }
 
+    public String getFullAdress() {
+        return street + ' ' + postalCode + ' ' + city + ' ' + state + ' ' + country;
+    }
+
     public GeographicPointDTO getGeographicPoint() { return geographicPoint; }
     public void setGeographicPoint(GeographicPointDTO geographicPoint) { this.geographicPoint = geographicPoint; }
 }
