@@ -43,3 +43,11 @@ tasks.register('runInternalCRMDemo', JavaExec) {
     mainClass = 'org.example.internal.InternalCRMDemo'
 }
 
+// Tâche : vérifier le chargement des 50 prospects
+tasks.register('runVerificationDataLoader', JavaExec) {
+    group = 'verification'
+    description = 'Vérifie que les 50 prospects sont bien chargés au démarrage.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.example.internal.VerificationDataLoader'
+}
+
