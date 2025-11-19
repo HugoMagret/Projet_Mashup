@@ -22,6 +22,8 @@ dependencies {
     implementation 'org.apache.thrift:libthrift:0.16.0'
     // Logger simple pour éviter le warning SLF4J (NOP binder)
     implementation 'org.slf4j:slf4j-simple:1.7.36'
+    // Servlet API for compilation (provided by container at runtime)
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
 }
 
 // Tâche : lancer le serveur Thrift InternalCRM
