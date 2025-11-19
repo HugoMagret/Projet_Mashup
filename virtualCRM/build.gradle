@@ -1,20 +1,36 @@
 plugins {
+    id 'org.springframework.boot' version '3.2.4'
+    id 'io.spring.dependency-management' version '1.1.4'
     id 'java'
 }
 
 group = 'org.example'
 version = '1.0-SNAPSHOT'
 
+java {
+    sourceCompatibility = '17'
+}
+
+test {
+    testLogging {
+        // Montre la sortie standard et les logs
+        showStandardStreams = true
+        events "passed", "skipped", "failed"
+    }
+}
+
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-    useJUnitPlatform()
+    implementation project(':internalCRM')
+    implementation project(':geolocation')
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
+    implementation ('org.apache.thrift:libthrift:0.17.0') {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

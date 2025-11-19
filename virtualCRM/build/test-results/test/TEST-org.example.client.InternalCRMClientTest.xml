@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.client.InternalCRMClientTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-10-07T13:40:11.945Z" hostname="port-hp-elitebook650G9-7" time="0.115">
+  <properties/>
+  <testcase name="testFindLeads()" classname="org.example.client.InternalCRMClientTest" time="0.115"/>
+  <system-out><![CDATA[Lead récupéré : Jean / Dupont
+]]></system-out>
+  <system-err><![CDATA[SLF4J(W): Class path contains multiple SLF4J providers.
+SLF4J(W): Found provider [ch.qos.logback.classic.spi.LogbackServiceProvider@4e0ae11f]
+SLF4J(W): Found provider [org.slf4j.simple.SimpleServiceProvider@238d68ff]
+SLF4J(W): See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J(I): Actual provider is of type [ch.qos.logback.classic.spi.LogbackServiceProvider@4e0ae11f]
+]]></system-err>
+</testsuite>

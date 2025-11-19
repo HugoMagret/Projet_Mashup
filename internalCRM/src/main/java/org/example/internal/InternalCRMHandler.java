@@ -1,118 +1,144 @@
 package org.example.internal;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import org.example.internal.ThriftNoSuchLeadException;
+import org.example.internal.ThriftWrongDateFormatException;
+import org.example.internal.ThriftWrongOrderForDateException;
+import org.example.internal.ThriftWrongOrderForRevenueException;
+import org.example.internal.ThriftWrongStateException;
 
 
-/*
- * Handler Thrift : implémentation en mémoire du service InternalCRM.
- * - Stocke les InternalLeadDTO dans une map
- * - fullname = "Nom, Prénom"
- * - méthodes basiques thread-safe
+/**
+ * CRM INTERNE : stocke et filtre les prospects commerciaux en mémoire
+ * 
+ * QUE FAIT CE SERVICE :
+ *   - Garde une liste de prospects (nom, entreprise, chiffre d'affaires, région...)
+ *   - Trouve les prospects par critères (revenus entre X et Y, région donnée)
+ *   - Trouve les prospects par date de création
+ *   - Ajoute/supprime des prospects
+ * 
+ * EXEMPLE D'USAGE :
+ *   findLeads(50000, 150000, "Loire-Atlantique") 
+ *   → tous les prospects entre 50k€ et 150k€ en Loire-Atlantique
  */
 public class InternalCRMHandler implements InternalCRM.Iface {
+    /**
+     * Handler utilisé par le serveur et la demo.
+     * Il délègue au modèle métier et convertit/propage les exceptions Thrift.
+     */
 
-    private final Map<Long, InternalLeadDTO> store = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    // Déléguer vers le modèle métier centralisé
+    private final org.example.internal.model.LeadModel model = org.example.internal.model.LeadModelFactory.getModel();
 
     public InternalCRMHandler() {
-        // données d'exemple
-        InternalLeadDTO sample = new InternalLeadDTO();
-        sample.setFirstName("Jean");
-        sample.setLastName("Dupont");
-        sample.setCompanyName("Acme");
-        sample.setAnnualRevenue(50000.0);
-        sample.setPhone("+33123456789");
-        sample.setStreet("1 rue Exemple");
-        sample.setPostalCode("49100");
-        sample.setCity("Angers");
-        sample.setState("Maine-et-Loire");
-        sample.setCountry("France");
-        sample.setCreationDate("2024-09-01T10:00:00Z");
-        createLead(sample);
-
-    }
-
-    @Override
-    public List<InternalLeadDTO> findLeads(double lowAnnualRevenue, double highAnnualRevenue, String province) {
-        // Filtrage en mémoire : revenus dans l'intervalle + état (province) optionnel
-        List<InternalLeadDTO> result = new ArrayList<>();
-        for (InternalLeadDTO l : store.values()) {
-            double rev = l.getAnnualRevenue();
-            if (rev >= lowAnnualRevenue && rev <= highAnnualRevenue) {
-                if (province == null || province.isEmpty() || province.equalsIgnoreCase(l.getState())) {
-                    // On renvoie une copie IMMUTABLE côté appelant + nom au format "Nom, Prénom"
-                    result.add(cloneLead(l));
-                }
-            }
+        // Initialiser avec un exemple pour les démos (même comportement qu'avant)
+        org.example.internal.InternalLeadDTO exemple = new org.example.internal.InternalLeadDTO();
+        exemple.setFirstName("Jean");
+        exemple.setLastName("Dupont");
+        exemple.setCompanyName("Acme");
+        exemple.setAnnualRevenue(50000.0);
+        exemple.setPhone("+33123456789");
+        exemple.setStreet("1 rue Exemple");
+        exemple.setPostalCode("49100");
+        exemple.setCity("Angers");
+        exemple.setState("Maine-et-Loire");
+        exemple.setCountry("France");
+    // initialisation en string -> converti lors de createLead via ConverterUtils
+    exemple.setCreationDate("2024-09-01T10:00:00Z");
+        try {
+            createLead(exemple);
+        } catch (ThriftWrongStateException e) {
+            // Ignorer pour la démo si l'initialisation échoue
         }
-        return result;
     }
 
     @Override
-    public List<InternalLeadDTO> findLeadsByDate(String fromIso, String toIso) {
-        // Filtrage simple lexicographique sur des dates ISO-8601 (format triable)
-        List<InternalLeadDTO> result = new ArrayList<>();
-        for (InternalLeadDTO l : store.values()) {
-            String d = l.getCreationDate();
-            if (d == null) continue; // on ignore si pas de date
-            boolean after = (fromIso == null || fromIso.isEmpty()) || d.compareTo(fromIso) >= 0;
-            boolean before = (toIso == null || toIso.isEmpty()) || d.compareTo(toIso) <= 0;
-            if (after && before) result.add(cloneLead(l));
+    public List<org.example.internal.InternalLeadDTO> findLeads(double lowAnnualRevenue, double highAnnualRevenue, String province)
+            throws ThriftWrongOrderForRevenueException, ThriftWrongStateException {
+        // Appel direct au modèle. Les erreurs sont converties en exceptions Thrift.
+        try {
+            List<org.example.internal.model.Lead> leads = model.findLeads(lowAnnualRevenue, highAnnualRevenue, province);
+            return org.example.internal.utils.ConverterUtils.toDtoList(leads);
+        } catch (org.example.internal.model.exception.WrongOrderForRevenueException e) {
+            throw new ThriftWrongOrderForRevenueException(e.getMessage());
+        } catch (org.example.internal.model.exception.WrongStateException e) {
+            throw new ThriftWrongStateException(e.getMessage());
         }
-        return result;
+    }
+
+    /**
+     * Recherche les prospects crees entre deux dates.
+     * 
+     * Format ISO-8601 requis pour les dates :
+     * - Format : "yyyy-MM-dd'T'HH:mm:ss'Z'"
+     * - Exemple : "2024-09-15T10:00:00Z"
+     * - Z indique le fuseau UTC (temps universel)
+     * 
+     * Lance ThriftWrongDateFormatException si le format est invalide.
+     * Lance ThriftWrongOrderForDateException si fromIso > toIso.
+     */
+    @Override
+    public List<org.example.internal.InternalLeadDTO> findLeadsByDate(String fromIso, String toIso)
+            throws ThriftWrongDateFormatException, ThriftWrongOrderForDateException {
+        try {
+            java.util.Calendar from = org.example.internal.utils.ConverterUtils.isoStringToCalendar(fromIso);
+            java.util.Calendar to = org.example.internal.utils.ConverterUtils.isoStringToCalendar(toIso);
+            if (fromIso != null && from == null) throw new ThriftWrongDateFormatException("Format de date invalide: " + fromIso);
+            if (toIso != null && to == null) throw new ThriftWrongDateFormatException("Format de date invalide: " + toIso);
+            List<org.example.internal.model.Lead> leads = model.findLeadsByDate(from, to);
+            return org.example.internal.utils.ConverterUtils.toDtoList(leads);
+        } catch (org.example.internal.model.exception.WrongDateFormatException e) {
+            throw new ThriftWrongDateFormatException(e.getMessage());
+        } catch (org.example.internal.model.exception.WrongOrderForDateException e) {
+            throw new ThriftWrongOrderForDateException(e.getMessage());
+        }
+    }
+
+    /**
+     * Cree un nouveau prospect et retourne son ID unique.
+     * 
+     * Retour : i64 (long en Java) = entier 64 bits permettant
+     *          de generer des milliards d'IDs uniques sans depassement
+     */
+    @Override
+    public long createLead(org.example.internal.InternalLeadDTO lead) throws ThriftWrongStateException {
+        org.example.internal.model.Lead l = org.example.internal.utils.ConverterUtils.toModel(lead);
+        try {
+            return model.createLead(l);
+        } catch (org.example.internal.model.exception.WrongStateException e) {
+            throw new ThriftWrongStateException(e.getMessage());
+        }
     }
 
     @Override
-    public long createLead(InternalLeadDTO lead) {
-        // Création : on garde les champs firstName / lastName séparés EN INTERNE
-        // Le format fusionné "Nom, Prénom" est appliqué uniquement sur les objets retournés.
-        long id = idGenerator.getAndIncrement();
-        // Normaliser si nécessaire (ex: "Nom, Prénom" pour usage interne)
-        if (lead.getFirstName() == null) lead.setFirstName("");
-        if (lead.getLastName() == null) lead.setLastName("");
-        // Stocker une copie pour éviter la mutation externe
-        store.put(id, cloneLeadWithId(lead, id));
-        return id;
+    public void deleteLead(org.example.internal.InternalLeadDTO leadDto) throws ThriftNoSuchLeadException {
+        org.example.internal.model.Lead template = org.example.internal.utils.ConverterUtils.toModel(leadDto);
+        try {
+            model.deleteLead(template);
+        } catch (org.example.internal.model.exception.NoSuchLeadException e) {
+            throw new ThriftNoSuchLeadException(e.getMessage());
+        }
     }
 
-    @Override
-    public void deleteLead(InternalLeadDTO leadDto) {
-        // Suppression par ID interne, si fourni, sinon suppression par comparaison complète
-        store.values().removeIf(l -> l.equals(leadDto));
+    private boolean equalsWithoutId(org.example.internal.model.Lead a, org.example.internal.model.Lead b) {
+        if (a == null || b == null) return false;
+        return safeEq(a.getFirstName(), b.getFirstName()) && safeEq(a.getLastName(), b.getLastName())
+                && Double.compare(a.getAnnualRevenue(), b.getAnnualRevenue()) == 0
+                && safeEq(a.getPhone(), b.getPhone())
+                && safeEq(a.getStreet(), b.getStreet())
+                && safeEq(a.getPostalCode(), b.getPostalCode())
+                && safeEq(a.getCity(), b.getCity())
+                && safeEq(a.getCountry(), b.getCountry())
+                && safeCalEq(a.getCreationDate(), b.getCreationDate())
+                && safeEq(a.getCompanyName(), b.getCompanyName())
+                && safeEq(a.getState(), b.getState());
     }
 
-    // Clonage shallow avec ID interne
-    private InternalLeadDTO cloneLeadWithId(InternalLeadDTO src, long id) {
-        // Copie shallow des champs (id non exposé dans la structure générée)
-        InternalLeadDTO c = new InternalLeadDTO();
-        c.setFirstName(src.getFirstName());
-        c.setLastName(src.getLastName());
-        c.setCompanyName(src.getCompanyName());
-        c.setAnnualRevenue(src.getAnnualRevenue());
-        c.setPhone(src.getPhone());
-        c.setStreet(src.getStreet());
-        c.setPostalCode(src.getPostalCode());
-        c.setCity(src.getCity());
-        c.setState(src.getState());
-        c.setCountry(src.getCountry());
-        c.setCreationDate(src.getCreationDate());
-        return c;
-    }
+    private boolean safeEq(String x, String y) { if (x == null) return y == null; return x.equals(y); }
 
-    // Optionnel : clone sans changer ID
-    private InternalLeadDTO cloneLead(InternalLeadDTO src) {
-        InternalLeadDTO c = cloneLeadWithId(src, 0);
-        // Appliquer la RÈGLE SPÉCIFIQUE (section 2.2) : concaténer Nom + ", " + Prénom
-        // On utilise lastName, firstName internes pour fabriquer un seul champ restitué.
-        String last = Optional.ofNullable(c.getLastName()).orElse("").trim();
-        String first = Optional.ofNullable(c.getFirstName()).orElse("").trim();
-        String full = (last.isEmpty() && first.isEmpty()) ? "" : last + ", " + first;
-        // On place le résultat dans firstName (choix arbitraire) et on vide lastName pour forcer le consommateur
-        // à parser ce champ unique.
-        c.setFirstName(full);
-        c.setLastName("");
-        return c;
+    private boolean safeCalEq(java.util.Calendar a, java.util.Calendar b) {
+        if (a == null) return b == null;
+        if (b == null) return false;
+        return a.getTimeInMillis() == b.getTimeInMillis();
     }
 }
