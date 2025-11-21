@@ -25,9 +25,13 @@ repositories {
 }
 
 dependencies {
-    implementation project(':internalCRM')
+    implementation (project(':internalCRM')) {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
+
     implementation project(':geolocation')
     implementation 'ch.qos.logback:logback-classic:1.4.11'
+
     implementation ('org.apache.thrift:libthrift:0.17.0') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
