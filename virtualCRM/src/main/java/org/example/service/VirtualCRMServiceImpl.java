@@ -22,46 +22,29 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
     private final SalesforceClient salesforceClient;
     private final GeoClient geoClient;
 
-    /*
+
+
     @Autowired
-    public VirtualCRMServiceImpl(
-            InternalCRMClient internalCRMClient,
-            SalesforceClient salesforceClient,
-            GeoClient geoClient) {
+    public VirtualCRMServiceImpl(InternalCRMClient internalCRMClient, SalesforceClient salesforceClient, GeoClient geoClient) {
         this.internalCRMClient = internalCRMClient;
         this.salesforceClient = salesforceClient;
         this.geoClient = geoClient;
-    }*/
-    @Autowired
-    public VirtualCRMServiceImpl(InternalCRMClient internalCRMClient, SalesforceClient salesforceClient) {
-        this.internalCRMClient = internalCRMClient;
-        this.salesforceClient = salesforceClient;
-        this.geoClient = null;
     }
-
-
-
-
 
     @Override
     public List<VirtualLeadDTO> findLeads(double minRevenue, double maxRevenue, String province) {
-
-
         // Get leads "InternalCRM"
         List<VirtualLeadDTO> internalLeads = internalCRMClient.findLeads(minRevenue, maxRevenue, province);
 
         // Get leads "Salesforce"
         List<VirtualLeadDTO> salesforceLeads = salesforceClient.findLeads(minRevenue, maxRevenue, province);
 
-        /*
-                .stream()
-                .map(LeadMapper::toVirtualLead)
-                .collect(Collectors.toList());
-        */
 
         List<VirtualLeadDTO> allLeads = new ArrayList<>();
         allLeads.addAll(internalLeads);
-        allLeads.addAll(salesforceLeads);
+
+        // WAITING FOR IMPL OF SALESFORCE
+        //allLeads.addAll(salesforceLeads);
 
         enrichWithGeoAndSort(allLeads);
         return allLeads;

@@ -74,7 +74,7 @@ public class ServiceGeolocalisation {
      * ATTENTION : L'email est fictif ! Dans un vrai projet, mettre un vrai contact.
      */
     public ServiceGeolocalisation() { 
-        this("ProjetMashup-Etudiant/1.0 (etudiant-test@example.com)"); 
+        this("ProjetMashup-Etudiant/1.0 (etudiant@etud.univ-angers.fr)");
     }
 
     /**
