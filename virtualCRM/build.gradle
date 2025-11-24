@@ -27,6 +27,8 @@ repositories {
 dependencies {
     implementation project(':internalCRM')
     implementation project(':geolocation')
+    implementation project(':salesforce')
+    implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'ch.qos.logback:logback-classic:1.4.11'
     implementation ('org.apache.thrift:libthrift:0.17.0') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'

@@ -1,6 +1,5 @@
 package org.example.service;
 
-
 import org.example.client.GeoClient;
 import org.example.client.InternalCRMClient;
 import org.example.client.SalesforceClient;
@@ -23,29 +22,26 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
     private final GeoClient geoClient;
 
     /*
+     * @Autowired
+     * public VirtualCRMServiceImpl(
+     * InternalCRMClient internalCRMClient,
+     * SalesforceClient salesforceClient,
+     * GeoClient geoClient) {
+     * this.internalCRMClient = internalCRMClient;
+     * this.salesforceClient = salesforceClient;
+     * this.geoClient = geoClient;
+     * }
+     */
     @Autowired
-    public VirtualCRMServiceImpl(
-            InternalCRMClient internalCRMClient,
-            SalesforceClient salesforceClient,
+    public VirtualCRMServiceImpl(InternalCRMClient internalCRMClient, SalesforceClient salesforceClient,
             GeoClient geoClient) {
         this.internalCRMClient = internalCRMClient;
         this.salesforceClient = salesforceClient;
         this.geoClient = geoClient;
-    }*/
-    @Autowired
-    public VirtualCRMServiceImpl(InternalCRMClient internalCRMClient, SalesforceClient salesforceClient) {
-        this.internalCRMClient = internalCRMClient;
-        this.salesforceClient = salesforceClient;
-        this.geoClient = null;
     }
-
-
-
-
 
     @Override
     public List<VirtualLeadDTO> findLeads(double minRevenue, double maxRevenue, String province) {
-
 
         // Get leads "InternalCRM"
         List<VirtualLeadDTO> internalLeads = internalCRMClient.findLeads(minRevenue, maxRevenue, province);
@@ -54,10 +50,10 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
         List<VirtualLeadDTO> salesforceLeads = salesforceClient.findLeads(minRevenue, maxRevenue, province);
 
         /*
-                .stream()
-                .map(LeadMapper::toVirtualLead)
-                .collect(Collectors.toList());
-        */
+         * .stream()
+         * .map(LeadMapper::toVirtualLead)
+         * .collect(Collectors.toList());
+         */
 
         List<VirtualLeadDTO> allLeads = new ArrayList<>();
         allLeads.addAll(internalLeads);
@@ -67,19 +63,17 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
         return allLeads;
     }
 
-
     private void enrichWithGeoAndSort(List<VirtualLeadDTO> leads) {
         for (VirtualLeadDTO lead : leads) {
-            
+
             String address = lead.getFullAdress();
             // NULL n'est pas géré car n'est pas censé casser la suite.
             GeographicPointDTO point = geoClient.geocode(address);
-            lead.setGeographicPoint(point); 
+            lead.setGeographicPoint(point);
         }
 
         leads.sort(Comparator.comparing(VirtualLeadDTO::getAnnualRevenue).reversed());
     }
-
 
     // TEMP
     @Override

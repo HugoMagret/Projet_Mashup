@@ -3,15 +3,11 @@ package org.example.controller;
 import org.example.dto.VirtualLeadDTO;
 import org.example.service.VirtualCRMService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/leads")
 public class VirtualCRMController {
 
     private final VirtualCRMService virtualCRMService;
@@ -21,7 +17,7 @@ public class VirtualCRMController {
         this.virtualCRMService = virtualCRMService;
     }
 
-    @GetMapping
+    @GetMapping("/api/leads")
     public List<VirtualLeadDTO> findLeads(
             @RequestParam double minRevenue,
             @RequestParam double maxRevenue,
@@ -29,7 +25,18 @@ public class VirtualCRMController {
         return virtualCRMService.findLeads(minRevenue, maxRevenue, province);
     }
 
-    @GetMapping("/byDate")
+    @PostMapping("/virtualcrm/findLeads")
+    public List<VirtualLeadDTO> findLeadsPost(@RequestBody Map<String, Object> criteria) {
+        double minRevenue = criteria.containsKey("revenueMin") ? ((Number) criteria.get("revenueMin")).doubleValue()
+                : 0;
+        double maxRevenue = criteria.containsKey("revenueMax") ? ((Number) criteria.get("revenueMax")).doubleValue()
+                : Double.MAX_VALUE;
+        String province = (String) criteria.getOrDefault("state", "");
+
+        return virtualCRMService.findLeads(minRevenue, maxRevenue, province);
+    }
+
+    @GetMapping("/api/leads/byDate")
     public List<VirtualLeadDTO> findLeadsByDate(
             @RequestParam String startDate,
             @RequestParam String endDate) {
