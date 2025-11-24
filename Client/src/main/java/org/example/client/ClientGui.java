@@ -182,13 +182,16 @@ public class ClientGui extends JFrame {
                     }
                 }
 
-                String url = BASE_URL + "/virtualcrm/findLeads";
+                String baseUrl = BASE_URL + "/api/leads";
+                StringBuilder urlBuilder = new StringBuilder(baseUrl);
+                urlBuilder.append("?minRevenue=").append(revenueMin.isEmpty() ? "0" : revenueMin);
+                urlBuilder.append("&maxRevenue=").append(revenueMax.isEmpty() ? "1000000000" : revenueMax);
+                urlBuilder.append("&province=").append(state.isEmpty() ? "" : java.net.URLEncoder.encode(state, java.nio.charset.StandardCharsets.UTF_8));
+
+                String url = urlBuilder.toString();
 
                 try (CloseableHttpClient http = HttpClients.createDefault()) {
-                    HttpPost request = new HttpPost(url);
-                    String jsonBody = mapper.writeValueAsString(criteria);
-
-                    request.setEntity(new StringEntity(jsonBody, ContentType.APPLICATION_JSON));
+                    org.apache.hc.client5.http.classic.methods.HttpGet request = new org.apache.hc.client5.http.classic.methods.HttpGet(url);
                     request.setHeader("Accept", "application/json");
 
                     String responseBody = http.execute(request, httpResponse -> {

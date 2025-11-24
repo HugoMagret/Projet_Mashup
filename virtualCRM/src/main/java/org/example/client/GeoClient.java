@@ -1,6 +1,6 @@
 package org.example.client;
 
-import org.example.geolocalisation.ClientNominatim;
+import org.example.geolocalisation.ServiceGeolocalisation;
 
 import org.example.dto.GeographicPointDTO;
 import org.springframework.stereotype.Component;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class GeoClient {
 
-    private final ClientNominatim client = new ClientNominatim();
+    private final ServiceGeolocalisation client = new ServiceGeolocalisation();
 
     public GeographicPointDTO geocode(String address) {
         return client.geolocaliserAdresse(address)

@@ -13,7 +13,7 @@ public class VirtualLeadDTO {
     private String state;
     private String country;
     private String creationDate;
-    private GeographicPointDTO geographicPoint; // latitude + longitude
+    private GeographicPointDTO geographicPoint;
 
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
