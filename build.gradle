@@ -40,7 +40,7 @@ subprojects {
  * Gretty sur les deux webapps : virtualCRM + internalCRM
  * ils seront automatiquement ajoutés dans la farm par défaut.
  */
-configure([project(':virtualCRM'), project(':internalCRM')]) {
+configure([/*project(':virtualCRM'),*/ project(':internalCRM')]) {
     apply plugin: 'org.gretty'
 }
 
