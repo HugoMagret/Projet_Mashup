@@ -1,25 +1,20 @@
 package org.example.internal;
 
 import java.util.*;
-import org.example.internal.ThriftNoSuchLeadException;
-import org.example.internal.ThriftWrongDateFormatException;
-import org.example.internal.ThriftWrongOrderForDateException;
-import org.example.internal.ThriftWrongOrderForRevenueException;
-import org.example.internal.ThriftWrongStateException;
-
 
 /**
  * CRM INTERNE : stocke et filtre les prospects commerciaux en mémoire
  * 
  * QUE FAIT CE SERVICE :
- *   - Garde une liste de prospects (nom, entreprise, chiffre d'affaires, région...)
- *   - Trouve les prospects par critères (revenus entre X et Y, région donnée)
- *   - Trouve les prospects par date de création
- *   - Ajoute/supprime des prospects
+ * - Garde une liste de prospects (nom, entreprise, chiffre d'affaires,
+ * région...)
+ * - Trouve les prospects par critères (revenus entre X et Y, région donnée)
+ * - Trouve les prospects par date de création
+ * - Ajoute/supprime des prospects
  * 
  * EXEMPLE D'USAGE :
- *   findLeads(50000, 150000, "Loire-Atlantique") 
- *   → tous les prospects entre 50k€ et 150k€ en Loire-Atlantique
+ * findLeads(50000, 150000, "Loire-Atlantique")
+ * → tous les prospects entre 50k€ et 150k€ en Loire-Atlantique
  */
 public class InternalCRMHandler implements InternalCRM.Iface {
     /**
@@ -33,37 +28,39 @@ public class InternalCRMHandler implements InternalCRM.Iface {
     public InternalCRMHandler() {
         // Charger les données initiales (environ 50 prospects)
         List<InternalLeadDTO> prospectsInitiaux = InitialDataLoader.genererProspectsInitiaux();
-        
+
         System.out.println("[InternalCRM] Chargement de " + prospectsInitiaux.size() + " prospects initiaux...");
         int compteur = 0;
-        
+
         for (InternalLeadDTO prospect : prospectsInitiaux) {
             try {
                 createLead(prospect);
                 compteur++;
             } catch (ThriftWrongStateException e) {
                 // Log l'erreur mais continue le chargement
-                System.err.println("[ERREUR] Impossible de créer le prospect " + 
-                    prospect.getFirstName() + " " + prospect.getLastName() + 
-                    " : État invalide - " + e.getMessage());
+                System.err.println("[ERREUR] Impossible de créer le prospect " +
+                        prospect.getFirstName() + " " + prospect.getLastName() +
+                        " : État invalide - " + e.getMessage());
             } catch (Exception e) {
                 // Capture toute autre exception inattendue
-                System.err.println("[ERREUR] Erreur inattendue lors de la création du prospect " + 
-                    prospect.getFirstName() + " " + prospect.getLastName() + 
-                    " : " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                System.err.println("[ERREUR] Erreur inattendue lors de la création du prospect " +
+                        prospect.getFirstName() + " " + prospect.getLastName() +
+                        " : " + e.getClass().getSimpleName() + " - " + e.getMessage());
             }
         }
-        
-        System.out.println("[InternalCRM] ✓ " + compteur + "/" + prospectsInitiaux.size() + 
-            " prospects chargés avec succès");
+
+        System.out.println("[InternalCRM] ✓ " + compteur + "/" + prospectsInitiaux.size() +
+                " prospects chargés avec succès");
     }
 
     @Override
-    public List<org.example.internal.InternalLeadDTO> findLeads(double lowAnnualRevenue, double highAnnualRevenue, String province)
+    public List<org.example.internal.InternalLeadDTO> findLeads(double lowAnnualRevenue, double highAnnualRevenue,
+            String province)
             throws ThriftWrongOrderForRevenueException, ThriftWrongStateException {
         // Appel direct au modèle. Les erreurs sont converties en exceptions Thrift.
         try {
-            List<org.example.internal.model.Lead> leads = model.findLeads(lowAnnualRevenue, highAnnualRevenue, province);
+            List<org.example.internal.model.Lead> leads = model.findLeads(lowAnnualRevenue, highAnnualRevenue,
+                    province);
             return org.example.internal.utils.ConverterUtils.toDtoList(leads);
         } catch (org.example.internal.model.exception.WrongOrderForRevenueException e) {
             throw new ThriftWrongOrderForRevenueException(e.getMessage());
@@ -89,8 +86,10 @@ public class InternalCRMHandler implements InternalCRM.Iface {
         try {
             java.util.Calendar from = org.example.internal.utils.ConverterUtils.isoStringToCalendar(fromIso);
             java.util.Calendar to = org.example.internal.utils.ConverterUtils.isoStringToCalendar(toIso);
-            if (fromIso != null && from == null) throw new ThriftWrongDateFormatException("Format de date invalide: " + fromIso);
-            if (toIso != null && to == null) throw new ThriftWrongDateFormatException("Format de date invalide: " + toIso);
+            if (fromIso != null && from == null)
+                throw new ThriftWrongDateFormatException("Format de date invalide: " + fromIso);
+            if (toIso != null && to == null)
+                throw new ThriftWrongDateFormatException("Format de date invalide: " + toIso);
             List<org.example.internal.model.Lead> leads = model.findLeadsByDate(from, to);
             return org.example.internal.utils.ConverterUtils.toDtoList(leads);
         } catch (org.example.internal.model.exception.WrongDateFormatException e) {
@@ -104,7 +103,7 @@ public class InternalCRMHandler implements InternalCRM.Iface {
      * Cree un nouveau prospect et retourne son ID unique.
      * 
      * Retour : i64 (long en Java) = entier 64 bits permettant
-     *          de generer des milliards d'IDs uniques sans depassement
+     * de generer des milliards d'IDs uniques sans depassement
      */
     @Override
     public long createLead(org.example.internal.InternalLeadDTO lead) throws ThriftWrongStateException {
@@ -127,7 +126,8 @@ public class InternalCRMHandler implements InternalCRM.Iface {
     }
 
     private boolean equalsWithoutId(org.example.internal.model.Lead a, org.example.internal.model.Lead b) {
-        if (a == null || b == null) return false;
+        if (a == null || b == null)
+            return false;
         return safeEq(a.getFirstName(), b.getFirstName()) && safeEq(a.getLastName(), b.getLastName())
                 && Double.compare(a.getAnnualRevenue(), b.getAnnualRevenue()) == 0
                 && safeEq(a.getPhone(), b.getPhone())
@@ -140,11 +140,17 @@ public class InternalCRMHandler implements InternalCRM.Iface {
                 && safeEq(a.getState(), b.getState());
     }
 
-    private boolean safeEq(String x, String y) { if (x == null) return y == null; return x.equals(y); }
+    private boolean safeEq(String x, String y) {
+        if (x == null)
+            return y == null;
+        return x.equals(y);
+    }
 
     private boolean safeCalEq(java.util.Calendar a, java.util.Calendar b) {
-        if (a == null) return b == null;
-        if (b == null) return false;
+        if (a == null)
+            return b == null;
+        if (b == null)
+            return false;
         return a.getTimeInMillis() == b.getTimeInMillis();
     }
 }

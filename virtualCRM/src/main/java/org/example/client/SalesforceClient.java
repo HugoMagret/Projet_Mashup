@@ -19,7 +19,7 @@ public class SalesforceClient {
 
     public SalesforceClient() {
         // Hardcoded for now as per instructions
-        String accessToken = "00DgL00000F4QGD!AQEAQBAO_GAJSwhrc8Mt.xx9FZ_OR4ukaNkVtIvEwHrXz2mXiDPbSoL3diDhlFNknk1zlLrKZHX2yUz4RXtQHQ7xGKZamWxv";
+        String accessToken = "00DgL00000F4QGD!AQEAQIqOdiJmzP4Hlw5pI3PC3lI0r26050rf6LB496Qh.xAxTnUfZbrwlFBYtKZB9cgBTPB1YwHoy4hYVjk4khE9FIeLY.WB";
         String instanceUrl = "https://orgfarm-fccab8c3ff-dev-ed.develop.my.salesforce.com";
         this.connector = new SalesforceConnector(accessToken, instanceUrl);
     }
