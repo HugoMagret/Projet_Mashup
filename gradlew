@@ -13,7 +13,24 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
+# limitations under the License.etud@port-hp-elitebook650G9-4:~/IdeaProjects/Guacamol/Projet_Mashup$ ./gradlew farmRun
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file '/home/etud/IdeaProjects/Guacamol/Projet_Mashup/build.gradle' line: 34
+
+* What went wrong:
+A problem occurred evaluating root project 'Projet_Mashup'.
+> Could not find method farm() for arguments [build_armrq31lw81od8wlil0nxz777$_run_closure2@643c7bd3] on root project 'Projet_Mashup' of type org.gradle.api.Project.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 769ms
 #
 
 ##############################################################################

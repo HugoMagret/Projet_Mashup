@@ -51,3 +51,6 @@ tasks.register('runVerificationDataLoader', JavaExec) {
     mainClass = 'org.example.internal.VerificationDataLoader'
 }
 
+farm {
+    webapp project
+}
