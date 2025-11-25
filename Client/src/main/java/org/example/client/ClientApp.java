@@ -35,20 +35,20 @@ import java.util.Vector;
  */
 public class ClientApp extends JFrame {
 
-    private static final String DEFAULT_BASE_URL = "http://localhost:8080";
+    private static final String DEFAULT_BASE_URL = "http://localhost:8080/";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     // Champ pour la base URL
     private final JTextField tfBaseUrl = new JTextField(DEFAULT_BASE_URL);
 
     // Recherche par revenus
-    private final JTextField tfMinRevenue = new JTextField("50000");
-    private final JTextField tfMaxRevenue = new JTextField("150000");
+    private final JTextField tfMinRevenue = new JTextField("60000");
+    private final JTextField tfMaxRevenue = new JTextField("70000");
     private final JTextField tfProvince   = new JTextField("");
     private final JButton btnSearchRevenue = new JButton("Rechercher (revenus)");
 
     // Recherche par dates
-    private final JTextField tfStartDate = new JTextField("2024-01-01T00:00:00Z");
+    private final JTextField tfStartDate = new JTextField("2024-09-01T00:00:00Z");
     private final JTextField tfEndDate   = new JTextField("2024-12-31T23:59:59Z");
     private final JButton btnSearchDate = new JButton("Rechercher (dates)");
 
