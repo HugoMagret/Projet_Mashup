@@ -8,80 +8,192 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-import java.util.Scanner;
+import java.util.Vector;
 
 /**
- * Client en ligne de commande pour VirtualCRMService.
+ * Client graphique pour VirtualCRMService.
  *
- * Deux modes :
- *  1) Recherche par revenus : /api/leads?minRevenue=...&maxRevenue=...&province=...
- *  2) Recherche par dates  : /api/leads/byDate?startDate=...&endDate=...
+ * Deux types de recherche :
+ *  1) Par revenus : /api/leads?minRevenue=...&maxRevenue=...&province=...
+ *  2) Par dates  : /api/leads/byDate?startDate=...&endDate=...
  *
- * Le service renvoie une liste de VirtualLeadDTO au format JSON.
- * Ce client affiche toutes les informations demandées dans l'énoncé :
+ * Les résultats (VirtualLeadDTO) sont affichés dans un tableau :
  *  - nom, prénom
  *  - entreprise
  *  - revenu annuel
  *  - téléphone
- *  - adresse complète (rue, code postal, ville, département, pays)
+ *  - rue, code postal, ville, département, pays
  *  - date de création
- *  - position géographique (latitude / longitude) si disponible
+ *  - latitude / longitude (si géolocalisation disponible)
  */
-public final class ClientApp {
+public class ClientApp extends JFrame {
 
     private static final String DEFAULT_BASE_URL = "http://localhost:8080";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private ClientApp() {
-        // pas d'instance
+    // Champ pour la base URL
+    private final JTextField tfBaseUrl = new JTextField(DEFAULT_BASE_URL);
+
+    // Recherche par revenus
+    private final JTextField tfMinRevenue = new JTextField("50000");
+    private final JTextField tfMaxRevenue = new JTextField("150000");
+    private final JTextField tfProvince   = new JTextField("");
+    private final JButton btnSearchRevenue = new JButton("Rechercher (revenus)");
+
+    // Recherche par dates
+    private final JTextField tfStartDate = new JTextField("2024-01-01T00:00:00Z");
+    private final JTextField tfEndDate   = new JTextField("2024-12-31T23:59:59Z");
+    private final JButton btnSearchDate = new JButton("Rechercher (dates)");
+
+    // Tableau de résultats
+    private final DefaultTableModel tableModel = new DefaultTableModel(
+            new Object[]{
+                    "Nom", "Prénom", "Entreprise",
+                    "Revenu (€)", "Téléphone",
+                    "Rue", "Code postal", "Ville", "Département", "Pays",
+                    "Date création",
+                    "Latitude", "Longitude"
+            },
+            0
+    );
+    private final JTable table = new JTable(tableModel);
+
+    public ClientApp() {
+        super("VirtualCRM - Client graphique");
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout(8, 8));
+        ((JComponent) getContentPane()).setBorder(new EmptyBorder(8, 8, 8, 8));
+
+        // ---------- Bandeau supérieur : Base URL ----------
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.add(new JLabel("Base URL VirtualCRM : "), BorderLayout.WEST);
+        topPanel.add(tfBaseUrl, BorderLayout.CENTER);
+        add(topPanel, BorderLayout.NORTH);
+
+        // ---------- Centre haut : deux panneaux de critères ----------
+        JPanel criteriaPanel = new JPanel(new GridLayout(1, 2, 8, 0));
+        criteriaPanel.add(buildRevenuePanel());
+        criteriaPanel.add(buildDatePanel());
+        add(criteriaPanel, BorderLayout.CENTER);
+
+        // ---------- Bas : tableau de résultats ----------
+        table.setFillsViewportHeight(true);
+        add(new JScrollPane(table), BorderLayout.SOUTH);
+
+        // Actions des boutons
+        btnSearchRevenue.addActionListener(e -> searchByRevenue());
+        btnSearchDate.addActionListener(e -> searchByDate());
+
+        pack();
+        setSize(1100, 600);
+        setLocationRelativeTo(null);
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+    // Construit le panneau "Recherche par revenus"
+    private JPanel buildRevenuePanel() {
+        JPanel p = new JPanel(new GridBagLayout());
+        p.setBorder(BorderFactory.createTitledBorder("Recherche par revenus"));
 
-        // 1) Base URL
-        System.out.println("=== Client VirtualCRM ===");
-        System.out.print("Base URL du service [" + DEFAULT_BASE_URL + "] : ");
-        String baseInput = scanner.nextLine().trim();
-        String baseUrl = baseInput.isEmpty() ? DEFAULT_BASE_URL : baseInput;
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(4, 4, 4, 4);
+        c.anchor = GridBagConstraints.LINE_END;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
 
-        // 2) Choix du mode
-        System.out.println();
-        System.out.println("Choisissez le type de recherche :");
-        System.out.println("  1) Par revenus (min / max / province)");
-        System.out.println("  2) Par dates (startDate / endDate, ISO-8601)");
-        System.out.print("Votre choix (1/2) : ");
-        String choice = scanner.nextLine().trim();
+        int row = 0;
 
-        try {
-            if ("1".equals(choice)) {
-                runSearchByRevenue(scanner, baseUrl);
-            } else if ("2".equals(choice)) {
-                runSearchByDate(scanner, baseUrl);
-            } else {
-                System.out.println("Choix invalide, arrêt du client.");
-            }
-        } catch (Exception e) {
-            System.err.println("Erreur lors de l'appel au service VirtualCRM : " + e.getMessage());
-        }
+        // Revenu min
+        c.gridy = row; c.gridx = 0; c.weightx = 0;
+        p.add(new JLabel("Revenu min (€) :"), c);
+        c.gridx = 1; c.weightx = 1.0;
+        p.add(tfMinRevenue, c);
+        row++;
+
+        // Revenu max
+        c.gridy = row; c.gridx = 0; c.weightx = 0;
+        p.add(new JLabel("Revenu max (€) :"), c);
+        c.gridx = 1; c.weightx = 1.0;
+        p.add(tfMaxRevenue, c);
+        row++;
+
+        // Province
+        c.gridy = row; c.gridx = 0; c.weightx = 0;
+        p.add(new JLabel("Province / département :"), c);
+        c.gridx = 1; c.weightx = 1.0;
+        p.add(tfProvince, c);
+        row++;
+
+        // Bouton
+        c.gridy = row; c.gridx = 1; c.weightx = 0;
+        c.anchor = GridBagConstraints.LINE_START;
+        c.fill = GridBagConstraints.NONE;
+        p.add(btnSearchRevenue, c);
+
+        return p;
     }
 
-    // -------------------------------------------------------------------------
-    // Mode 1 : recherche par revenus
-    // -------------------------------------------------------------------------
+    // Construit le panneau "Recherche par dates"
+    private JPanel buildDatePanel() {
+        JPanel p = new JPanel(new GridBagLayout());
+        p.setBorder(BorderFactory.createTitledBorder("Recherche par dates"));
 
-    private static void runSearchByRevenue(Scanner scanner, String baseUrl) throws Exception {
-        System.out.println();
-        System.out.println("=== Recherche par revenus ===");
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(4, 4, 4, 4);
+        c.anchor = GridBagConstraints.LINE_END;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
 
-        System.out.print("Revenu annuel minimum : ");
-        String minStr = scanner.nextLine().trim();
+        int row = 0;
 
-        System.out.print("Revenu annuel maximum : ");
-        String maxStr = scanner.nextLine().trim();
+        JLabel lblFormat = new JLabel("<html><i>Format : yyyy-MM-dd'T'HH:mm:ss'Z'</i></html>");
+        c.gridy = row; c.gridx = 0; c.gridwidth = 2; c.weightx = 1.0;
+        c.anchor = GridBagConstraints.CENTER;
+        p.add(lblFormat, c);
+        row++;
+        c.gridwidth = 1;
+        c.anchor = GridBagConstraints.LINE_END;
+
+        // Date début
+        c.gridy = row; c.gridx = 0; c.weightx = 0;
+        p.add(new JLabel("Date début :"), c);
+        c.gridx = 1; c.weightx = 1.0;
+        p.add(tfStartDate, c);
+        row++;
+
+        // Date fin
+        c.gridy = row; c.gridx = 0; c.weightx = 0;
+        p.add(new JLabel("Date fin :"), c);
+        c.gridx = 1; c.weightx = 1.0;
+        p.add(tfEndDate, c);
+        row++;
+
+        // Bouton
+        c.gridy = row; c.gridx = 1; c.weightx = 0;
+        c.anchor = GridBagConstraints.LINE_START;
+        c.fill = GridBagConstraints.NONE;
+        p.add(btnSearchDate, c);
+
+        return p;
+    }
+
+    // ---------- Logique de recherche par revenus ----------
+
+    private void searchByRevenue() {
+        btnSearchRevenue.setEnabled(false);
+        btnSearchDate.setEnabled(false);
+        tableModel.setRowCount(0);
+
+        final String baseUrl   = tfBaseUrl.getText().trim().replaceAll("/+$", "");
+        final String minStr    = tfMinRevenue.getText().trim();
+        final String maxStr    = tfMaxRevenue.getText().trim();
+        final String province  = tfProvince.getText().trim();
 
         double minRevenue;
         double maxRevenue;
@@ -89,135 +201,126 @@ public final class ClientApp {
             minRevenue = Double.parseDouble(minStr);
             maxRevenue = Double.parseDouble(maxStr);
         } catch (NumberFormatException e) {
-            System.err.println("Les revenus doivent être des nombres (ex: 10000, 50000).");
+            JOptionPane.showMessageDialog(this,
+                    "Les revenus doivent être des nombres (ex: 10000, 50000).",
+                    "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
+            btnSearchRevenue.setEnabled(true);
+            btnSearchDate.setEnabled(true);
             return;
         }
 
-        System.out.print("Province / département (optionnel, Enter = toutes) : ");
-        String province = scanner.nextLine().trim();
+        new SwingWorker<JsonNode, Void>() {
+            @Override
+            protected JsonNode doInBackground() throws Exception {
+                String encodedProvince = URLEncoder.encode(province == null ? "" : province, StandardCharsets.UTF_8);
 
-        JsonNode leads = callFindLeads(baseUrl, minRevenue, maxRevenue, province);
+                String url = String.format(Locale.ROOT,
+                        "%s/api/leads?minRevenue=%f&maxRevenue=%f&province=%s",
+                        baseUrl, minRevenue, maxRevenue, encodedProvince);
 
-        if (leads == null || !leads.isArray() || leads.isEmpty()) {
-            System.out.println();
-            System.out.println("Aucun Lead trouvé pour ces critères.");
-            return;
-        }
+                try (CloseableHttpClient http = HttpClients.createDefault()) {
+                    HttpGet request = new HttpGet(url);
 
-        System.out.println();
-        System.out.println("=== Résultats (par revenus) ===");
-        printLeads(leads);
-    }
+                    String responseBody = http.execute(request, httpResponse -> {
+                        if (httpResponse.getCode() != HttpStatus.SC_OK) {
+                            throw new RuntimeException("Erreur HTTP " + httpResponse.getCode() + " : " +
+                                    httpResponse.getReasonPhrase());
+                        }
+                        return EntityUtils.toString(httpResponse.getEntity());
+                    });
 
-    private static JsonNode callFindLeads(String baseUrl,
-                                          double minRevenue,
-                                          double maxRevenue,
-                                          String province) throws Exception {
-
-        String trimmedBase = baseUrl.trim().replaceAll("/+$", "");
-        String encodedProvince = URLEncoder.encode(province == null ? "" : province, StandardCharsets.UTF_8);
-
-        // Paramètres compatibles avec VirtualCRMController :
-        // @RequestParam double minRevenue, @RequestParam double maxRevenue, @RequestParam String province
-        String url = String.format(Locale.ROOT,
-                "%s/api/leads?minRevenue=%f&maxRevenue=%f&province=%s",
-                trimmedBase, minRevenue, maxRevenue, encodedProvince);
-
-        try (CloseableHttpClient http = HttpClients.createDefault()) {
-            HttpGet request = new HttpGet(url);
-
-            String responseBody = http.execute(request, httpResponse -> {
-                if (httpResponse.getCode() != HttpStatus.SC_OK) {
-                    throw new RuntimeException("Erreur HTTP " + httpResponse.getCode() + " : " +
-                            httpResponse.getReasonPhrase());
+                    return MAPPER.readTree(responseBody);
                 }
-                return EntityUtils.toString(httpResponse.getEntity());
-            });
+            }
 
-            return MAPPER.readTree(responseBody);
-        }
+            @Override
+            protected void done() {
+                try {
+                    JsonNode leads = get();
+                    fillTableWithLeads(leads, "Aucun Lead trouvé pour ces critères (revenus).");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(ClientApp.this,
+                            "Erreur lors de l'appel au service VirtualCRM : " + ex.getMessage(),
+                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    btnSearchRevenue.setEnabled(true);
+                    btnSearchDate.setEnabled(true);
+                }
+            }
+        }.execute();
     }
 
-    // -------------------------------------------------------------------------
-    // Mode 2 : recherche par dates
-    // -------------------------------------------------------------------------
+    // ---------- Logique de recherche par dates ----------
 
-    private static void runSearchByDate(Scanner scanner, String baseUrl) throws Exception {
-        System.out.println();
-        System.out.println("=== Recherche par dates ===");
-        System.out.println("Format attendu (ISO-8601, UTC) : yyyy-MM-dd'T'HH:mm:ss'Z'");
-        System.out.println("Exemple : 2024-01-01T00:00:00Z");
+    private void searchByDate() {
+        btnSearchRevenue.setEnabled(false);
+        btnSearchDate.setEnabled(false);
+        tableModel.setRowCount(0);
 
-        System.out.print("Date de début (startDate) : ");
-        String startDate = scanner.nextLine().trim();
-
-        System.out.print("Date de fin   (endDate)   : ");
-        String endDate = scanner.nextLine().trim();
+        final String baseUrl   = tfBaseUrl.getText().trim().replaceAll("/+$", "");
+        final String startDate = tfStartDate.getText().trim();
+        final String endDate   = tfEndDate.getText().trim();
 
         if (startDate.isEmpty() || endDate.isEmpty()) {
-            System.err.println("Les deux dates doivent être renseignées.");
+            JOptionPane.showMessageDialog(this,
+                    "Les deux dates doivent être renseignées.",
+                    "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
+            btnSearchRevenue.setEnabled(true);
+            btnSearchDate.setEnabled(true);
             return;
         }
 
-        JsonNode leads = callFindLeadsByDate(baseUrl, startDate, endDate);
+        new SwingWorker<JsonNode, Void>() {
+            @Override
+            protected JsonNode doInBackground() throws Exception {
+                String encodedStart = URLEncoder.encode(startDate, StandardCharsets.UTF_8);
+                String encodedEnd   = URLEncoder.encode(endDate,   StandardCharsets.UTF_8);
 
-        if (leads == null || !leads.isArray() || leads.isEmpty()) {
-            System.out.println();
-            System.out.println("Aucun Lead trouvé pour ces critères.");
-            return;
-        }
+                String url = String.format("%s/api/leads/byDate?startDate=%s&endDate=%s",
+                        baseUrl, encodedStart, encodedEnd);
 
-        System.out.println();
-        System.out.println("=== Résultats (par dates) ===");
-        printLeads(leads);
-    }
+                try (CloseableHttpClient http = HttpClients.createDefault()) {
+                    HttpGet request = new HttpGet(url);
 
-    private static JsonNode callFindLeadsByDate(String baseUrl,
-                                                String startDate,
-                                                String endDate) throws Exception {
+                    String responseBody = http.execute(request, httpResponse -> {
+                        if (httpResponse.getCode() != HttpStatus.SC_OK) {
+                            throw new RuntimeException("Erreur HTTP " + httpResponse.getCode() + " : " +
+                                    httpResponse.getReasonPhrase());
+                        }
+                        return EntityUtils.toString(httpResponse.getEntity());
+                    });
 
-        String trimmedBase = baseUrl.trim().replaceAll("/+$", "");
-        String encodedStart = URLEncoder.encode(startDate, StandardCharsets.UTF_8);
-        String encodedEnd   = URLEncoder.encode(endDate,   StandardCharsets.UTF_8);
-
-        // Compatible avec VirtualCRMController :
-        // @GetMapping("/byDate")
-        // @RequestParam String startDate, @RequestParam String endDate
-        String url = String.format("%s/api/leads/byDate?startDate=%s&endDate=%s",
-                trimmedBase, encodedStart, encodedEnd);
-
-        try (CloseableHttpClient http = HttpClients.createDefault()) {
-            HttpGet request = new HttpGet(url);
-
-            String responseBody = http.execute(request, httpResponse -> {
-                if (httpResponse.getCode() != HttpStatus.SC_OK) {
-                    throw new RuntimeException("Erreur HTTP " + httpResponse.getCode() + " : " +
-                            httpResponse.getReasonPhrase());
+                    return MAPPER.readTree(responseBody);
                 }
-                return EntityUtils.toString(httpResponse.getEntity());
-            });
+            }
 
-            return MAPPER.readTree(responseBody);
-        }
+            @Override
+            protected void done() {
+                try {
+                    JsonNode leads = get();
+                    fillTableWithLeads(leads, "Aucun Lead trouvé pour ces critères (dates).");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(ClientApp.this,
+                            "Erreur lors de l'appel au service VirtualCRM : " + ex.getMessage(),
+                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    btnSearchRevenue.setEnabled(true);
+                    btnSearchDate.setEnabled(true);
+                }
+            }
+        }.execute();
     }
 
-    // -------------------------------------------------------------------------
-    // Affichage commun des résultats (VirtualLeadDTO)
-    // -------------------------------------------------------------------------
+    // ---------- Remplissage du tableau à partir du JSON ----------
 
-    /**
-     * Affiche les VirtualLeadDTO (sous forme de JsonNode) renvoyés par le service.
-     *
-     * Champs attendus :
-     *  - firstName, lastName
-     *  - companyName
-     *  - annualRevenue
-     *  - phone
-     *  - street, postalCode, city, state, country
-     *  - creationDate
-     *  - geographicPoint { latitude, longitude } (peut être nul)
-     */
-    private static void printLeads(JsonNode leads) {
+    private void fillTableWithLeads(JsonNode leads, String emptyMessage) {
+        if (leads == null || !leads.isArray() || leads.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    emptyMessage,
+                    "Résultat", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
         Locale localeFr = Locale.FRANCE;
 
         for (JsonNode lead : leads) {
@@ -234,8 +337,8 @@ public final class ClientApp {
             String creationDate  = lead.path("creationDate").asText("-");
 
             JsonNode geo = lead.path("geographicPoint");
-            String latStr = "inconnue";
-            String lonStr = "inconnue";
+            String latStr = "-";
+            String lonStr = "-";
             if (geo != null && !geo.isMissingNode() && !geo.isNull()) {
                 double lat = geo.path("latitude").asDouble(Double.NaN);
                 double lon = geo.path("longitude").asDouble(Double.NaN);
@@ -247,21 +350,30 @@ public final class ClientApp {
 
             String revenueStr = (annualRevenue <= 0.0)
                     ? "-"
-                    : String.format(localeFr, "%.2f €", annualRevenue);
+                    : String.format(localeFr, "%.2f", annualRevenue);
 
-            System.out.println("------------------------------------------------------------");
-            System.out.printf("Nom / Prénom : %s %s%n", lastName, firstName);
-            System.out.printf("Entreprise   : %s%n", companyName);
-            System.out.printf("Revenu annuel: %s%n", revenueStr);
-            System.out.printf("Téléphone    : %s%n", phone);
-            System.out.printf("Adresse      : %s%n", street);
-            System.out.printf("Code postal  : %s%n", postalCode);
-            System.out.printf("Ville        : %s%n", city);
-            System.out.printf("Département  : %s%n", state);
-            System.out.printf("Pays         : %s%n", country);
-            System.out.printf("Date création: %s%n", creationDate);
-            System.out.printf("Position     : latitude=%s, longitude=%s%n", latStr, lonStr);
+            Vector<Object> row = new Vector<>();
+            row.add(lastName);
+            row.add(firstName);
+            row.add(companyName);
+            row.add(revenueStr);
+            row.add(phone);
+            row.add(street);
+            row.add(postalCode);
+            row.add(city);
+            row.add(state);
+            row.add(country);
+            row.add(creationDate);
+            row.add(latStr);
+            row.add(lonStr);
+
+            tableModel.addRow(row);
         }
-        System.out.println("------------------------------------------------------------");
+    }
+
+    // ---------- main() : démarrage de l'interface graphique ----------
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new ClientApp().setVisible(true));
     }
 }

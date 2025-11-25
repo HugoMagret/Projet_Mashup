@@ -5,3 +5,5 @@ include 'virtualCRM'
 include 'internalCRM'
 include 'geolocation'
 include 'virtualCRM:src:test:java'
+
+include 'manage'
