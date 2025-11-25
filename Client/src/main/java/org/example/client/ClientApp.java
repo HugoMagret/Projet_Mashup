@@ -92,7 +92,7 @@ public class ClientApp extends JFrame {
         btnSearchDate.addActionListener(e -> searchByDate());
 
         pack();
-        setSize(1100, 600);
+        setSize(1300, 700);
         setLocationRelativeTo(null);
     }
 
