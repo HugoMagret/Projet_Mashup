@@ -88,7 +88,16 @@ public class LeadMerger {
      * Création d'un lead individuel (utile pour la commande 'add').
      */
     public long addLead(InternalLeadDTO lead) throws Exception {
-        return internalClient.createLead(lead);
+        try {
+            return internalClient.createLead(lead);
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la création du lead : " + e.getMessage());
+            if (e.getCause() instanceof java.net.SocketTimeoutException) {
+                System.err.println("  Le serveur InternalCRM n'a pas répondu dans les temps.");
+                System.err.println("  Vérifiez que le serveur est bien démarré et fonctionne correctement.");
+            }
+            throw e;
+        }
     }
 
     /**
@@ -96,7 +105,16 @@ public class LeadMerger {
      * On utilise le matching exact de InternalCRM (equalsWithoutId côté modèle).
      */
     public void deleteLead(InternalLeadDTO template) throws Exception {
-        internalClient.deleteLead(template);
+        try {
+            internalClient.deleteLead(template);
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la suppression du lead : " + e.getMessage());
+            if (e.getCause() instanceof java.net.SocketTimeoutException) {
+                System.err.println("  Le serveur InternalCRM n'a pas répondu dans les temps.");
+                System.err.println("  Vérifiez que le serveur est bien démarré et fonctionne correctement.");
+            }
+            throw e;
+        }
     }
 }
 

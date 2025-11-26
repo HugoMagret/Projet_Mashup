@@ -117,11 +117,28 @@ public class InternalCRMHandler implements InternalCRM.Iface {
 
     @Override
     public void deleteLead(org.example.internal.InternalLeadDTO leadDto) throws ThriftNoSuchLeadException {
-        org.example.internal.model.Lead template = org.example.internal.utils.ConverterUtils.toModel(leadDto);
         try {
+            System.out.println("[InternalCRMHandler] Tentative de suppression d'un lead...");
+            System.out.println("[InternalCRMHandler] DTO reçu - firstName='" + leadDto.getFirstName() + 
+                             "', lastName='" + leadDto.getLastName() + 
+                             "', annualRevenue=" + leadDto.getAnnualRevenue() + 
+                             ", isSetAnnualRevenue=" + leadDto.isSetAnnualRevenue());
+            org.example.internal.model.Lead template = org.example.internal.utils.ConverterUtils.toModel(leadDto);
+            System.out.println("[InternalCRMHandler] Template créé - firstName='" + template.getFirstName() + 
+                             "', lastName='" + template.getLastName() + 
+                             "', annualRevenue=" + template.getAnnualRevenue());
             model.deleteLead(template);
+            System.out.println("[InternalCRMHandler] Lead supprimé avec succès");
         } catch (org.example.internal.model.exception.NoSuchLeadException e) {
+            System.out.println("[InternalCRMHandler] Aucun lead correspondant trouvé : " + e.getMessage());
             throw new ThriftNoSuchLeadException(e.getMessage());
+        } catch (Exception e) {
+            // Capturer toutes les autres exceptions pour éviter "Internal error processing deleteLead"
+            System.err.println("[InternalCRMHandler] ERREUR lors de la suppression du lead : " + e.getClass().getSimpleName());
+            System.err.println("[InternalCRMHandler] Message : " + e.getMessage());
+            e.printStackTrace();
+            // Relancer comme ThriftNoSuchLeadException avec un message explicite
+            throw new ThriftNoSuchLeadException("Erreur lors de la suppression : " + e.getClass().getSimpleName() + " - " + e.getMessage());
         }
     }
 

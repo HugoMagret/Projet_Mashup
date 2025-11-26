@@ -124,6 +124,8 @@ public class InitialDataLoader {
             "21 rue de Rennes", "53000", "Laval", "Mayenne", "France", "2024-09-18T10:05:00Z"));
         prospects.add(creerProspect("Nina", "Riviere", "Mayenne Data", 99000, "+33243333435",
             "10 place Hardy de Levaré", "53000", "Laval", "Mayenne", "France", "2024-10-12T13:40:00Z"));
+        prospects.add(creerProspect("Ronan", "Caca", "Mayenne Data", 99000, "+33243333435",
+                "10 place Hardy de Levaré", "53000", "Laval", "Mayenne", "France", "2024-10-12T13:40:00Z"));
 
         return prospects;
     }

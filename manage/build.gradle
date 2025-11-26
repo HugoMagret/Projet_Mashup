@@ -22,3 +22,8 @@ dependencies {
 application {
     mainClass = 'org.example.LeadMergerApp'
 }
+
+// Permettre l'interaction avec le terminal pour les commandes add/delete
+run {
+    standardInput = System.in
+}
