@@ -106,8 +106,25 @@ public class LeadMergerApp {
         System.out.print("Pays : ");
         dto.setCountry(sc.nextLine().trim());
 
-        System.out.print("Date de création (ISO-8601, ex: 2024-09-15T10:00:00Z) : ");
-        dto.setCreationDate(sc.nextLine().trim());
+        System.out.print("Date de création (ISO-8601, ex: 2024-09-15T10:00:00Z, ou vide pour date actuelle) : ");
+        String dateInput = sc.nextLine().trim();
+        if (dateInput.isEmpty()) {
+            // Si la date est vide, utiliser la date actuelle au format ISO-8601
+            java.time.OffsetDateTime now = java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC);
+            dto.setCreationDate(now.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")));
+            System.out.println("  Utilisation de la date actuelle : " + dto.getCreationDate());
+        } else {
+            // Valider le format de la date avant de l'envoyer
+            if (!isValidIsoDate(dateInput)) {
+                System.err.println("ERREUR : Format de date invalide. Format attendu : yyyy-MM-dd'T'HH:mm:ss'Z'");
+                System.err.println("  Exemple : 2024-09-15T10:00:00Z");
+                System.err.println("  La date entrée sera ignorée et remplacée par la date actuelle.");
+                java.time.OffsetDateTime now = java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC);
+                dto.setCreationDate(now.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")));
+            } else {
+                dto.setCreationDate(dateInput);
+            }
+        }
 
         long id = merger.addLead(dto);
         System.out.println("Lead créé avec succès. ID généré = " + id);
@@ -119,6 +136,8 @@ public class LeadMergerApp {
         Scanner sc = new Scanner(System.in);
 
         InternalLeadDTO dto = new InternalLeadDTO();
+        // Désactiver annualRevenue par défaut pour qu'il soit ignoré si non renseigné
+        dto.unsetAnnualRevenue();
 
         System.out.print("Prénom (laisser vide si inconnu) : ");
         dto.setFirstName(emptyToNull(sc.nextLine()));
@@ -131,10 +150,13 @@ public class LeadMergerApp {
 
         System.out.print("Revenu annuel (laisser vide si inconnu) : ");
         String revStr = sc.nextLine().trim();
-        if (revStr.isEmpty()) {
-            dto.setAnnualRevenue(0.0);
-        } else {
+        if (!revStr.isEmpty()) {
             dto.setAnnualRevenue(Double.parseDouble(revStr));
+            System.out.println("[LeadMergerApp] annualRevenue défini: " + dto.getAnnualRevenue() + ", isSet=" + dto.isSetAnnualRevenue());
+        } else {
+            // Si vide, s'assurer que annualRevenue est bien non défini
+            dto.unsetAnnualRevenue();
+            System.out.println("[LeadMergerApp] annualRevenue non défini (unset), isSet=" + dto.isSetAnnualRevenue());
         }
 
         System.out.print("Téléphone (laisser vide si inconnu) : ");
@@ -166,6 +188,22 @@ public class LeadMergerApp {
     private static String emptyToNull(String s) {
         String t = s.trim();
         return t.isEmpty() ? null : t;
+    }
+
+    /**
+     * Valide le format ISO-8601 de la date (yyyy-MM-dd'T'HH:mm:ss'Z')
+     */
+    private static boolean isValidIsoDate(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return false;
+        }
+        try {
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            java.time.OffsetDateTime.parse(dateStr, formatter);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private static void printUsage() {

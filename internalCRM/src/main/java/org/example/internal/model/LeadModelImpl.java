@@ -100,15 +100,19 @@ public class LeadModelImpl implements LeadModel {
 
     @Override
     public void deleteLead(Lead template) throws NoSuchLeadException {
-        boolean removed = false;
+        // Collecter les IDs à supprimer d'abord pour éviter les problèmes de modification concurrente
+        java.util.List<Long> idsToRemove = new java.util.ArrayList<>();
         for (Lead candidate : store.values()) {
-            if (equalsWithoutId(candidate, template)) {
-                store.remove(candidate.getId());
-                removed = true;
+            if (equalsWithoutId(template, candidate)) {
+                idsToRemove.add(candidate.getId());
             }
         }
-        if (!removed) {
+        if (idsToRemove.isEmpty()) {
             throw new NoSuchLeadException("Aucun prospect correspondant trouvé pour suppression");
+        }
+        // Supprimer tous les leads correspondants
+        for (Long id : idsToRemove) {
+            store.remove(id);
         }
     }
 
@@ -147,18 +151,84 @@ public class LeadModelImpl implements LeadModel {
         return c;
     }
 
-    private boolean equalsWithoutId(Lead a, Lead b) {
-        if (a == null || b == null) return false;
-        return safeEq(a.getFirstName(), b.getFirstName()) && safeEq(a.getLastName(), b.getLastName())
-                && Double.compare(a.getAnnualRevenue(), b.getAnnualRevenue()) == 0
-                && safeEq(a.getPhone(), b.getPhone())
-                && safeEq(a.getStreet(), b.getStreet())
-                && safeEq(a.getPostalCode(), b.getPostalCode())
-                && safeEq(a.getCity(), b.getCity())
-                && safeEq(a.getCountry(), b.getCountry())
-                && safeCalEq(a.getCreationDate(), b.getCreationDate())
-                && safeEq(a.getCompanyName(), b.getCompanyName())
-                && safeEq(a.getState(), b.getState());
+    /**
+     * Compare deux leads en ignorant l'ID.
+     * Pour la suppression, on compare SEULEMENT les champs renseignés du template.
+     * Si un champ est null/vide dans le template, il est ignoré (pas de comparaison).
+     * 
+     * @param template Le template de recherche (peut avoir des champs vides)
+     * @param candidate Le lead candidat à comparer
+     * @return true si tous les champs renseignés du template correspondent
+     */
+    private boolean equalsWithoutId(Lead template, Lead candidate) {
+        if (template == null || candidate == null) return false;
+        
+        // Vérifier qu'au moins firstName OU lastName est renseigné (obligatoire)
+        boolean hasFirstName = template.getFirstName() != null && !template.getFirstName().trim().isEmpty();
+        boolean hasLastName = template.getLastName() != null && !template.getLastName().trim().isEmpty();
+        
+        if (!hasFirstName && !hasLastName) {
+            // Aucun nom/prénom renseigné, impossible de faire une correspondance
+            return false;
+        }
+        
+        // Comparer firstName si renseigné
+        if (hasFirstName && !safeEq(template.getFirstName(), candidate.getFirstName())) {
+            return false;
+        }
+        
+        // Comparer lastName si renseigné
+        if (hasLastName && !safeEq(template.getLastName(), candidate.getLastName())) {
+            return false;
+        }
+        
+        // Comparer annualRevenue SEULEMENT si défini (>= 0.0 signifie défini, < 0.0 = sentinelle "non défini")
+        if (template.getAnnualRevenue() >= 0.0) {
+            if (Double.compare(template.getAnnualRevenue(), candidate.getAnnualRevenue()) != 0) {
+                return false;
+            }
+        }
+        // Sinon, on ignore ce champ (pas de comparaison)
+        
+        // Comparer les autres champs string SEULEMENT s'ils sont renseignés
+        if (template.getPhone() != null && !template.getPhone().trim().isEmpty()) {
+            if (!safeEq(template.getPhone(), candidate.getPhone())) return false;
+        }
+        
+        if (template.getStreet() != null && !template.getStreet().trim().isEmpty()) {
+            if (!safeEq(template.getStreet(), candidate.getStreet())) return false;
+        }
+        
+        if (template.getPostalCode() != null && !template.getPostalCode().trim().isEmpty()) {
+            if (!safeEq(template.getPostalCode(), candidate.getPostalCode())) return false;
+        }
+        
+        if (template.getCity() != null && !template.getCity().trim().isEmpty()) {
+            if (!safeEq(template.getCity(), candidate.getCity())) return false;
+        }
+        
+        if (template.getCountry() != null && !template.getCountry().trim().isEmpty()) {
+            if (!safeEq(template.getCountry(), candidate.getCountry())) return false;
+        }
+        
+        if (template.getCompanyName() != null && !template.getCompanyName().trim().isEmpty()) {
+            if (!safeEq(template.getCompanyName(), candidate.getCompanyName())) return false;
+        }
+        
+        if (template.getState() != null && !template.getState().trim().isEmpty()) {
+            if (!safeEq(template.getState(), candidate.getState())) return false;
+        }
+        
+        // Comparer creationDate SEULEMENT si renseignée
+        if (template.getCreationDate() != null) {
+            if (!safeCalEq(template.getCreationDate(), candidate.getCreationDate())) {
+                return false;
+            }
+        }
+        // Sinon, on ignore ce champ (pas de comparaison)
+        
+        // Tous les champs renseignés correspondent
+        return true;
     }
 
     private boolean safeEq(String x, String y) {

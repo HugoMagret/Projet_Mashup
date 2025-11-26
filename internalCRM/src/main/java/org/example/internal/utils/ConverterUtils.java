@@ -45,7 +45,29 @@ public final class ConverterUtils {
         Lead l = new Lead();
         l.setFirstName(dto.getFirstName());
         l.setLastName(dto.getLastName());
-        l.setAnnualRevenue(dto.getAnnualRevenue());
+        // Ne définir annualRevenue que si le champ est explicitement défini dans le DTO
+        // Vérifier à la fois isSetAnnualRevenue() ET si la valeur n'est pas 0.0 (valeur par défaut)
+        // car Thrift peut avoir isSetAnnualRevenue=true avec une valeur par défaut de 0.0
+        boolean isSet = dto.isSetAnnualRevenue();
+        double revenueValue = dto.getAnnualRevenue();
+        
+        // Si isSetAnnualRevenue() retourne false, ou si la valeur est 0.0 ET qu'on n'a pas explicitement défini,
+        // on considère que le champ n'est pas défini
+        // Note: On ne peut pas distinguer "0.0 défini explicitement" de "0.0 par défaut", 
+        // donc on utilise une heuristique: si isSetAnnualRevenue() est false, on ignore
+        if (isSet && revenueValue != 0.0) {
+            // Champ défini avec une valeur non-nulle
+            l.setAnnualRevenue(revenueValue);
+        } else if (isSet && revenueValue == 0.0) {
+            // Cas ambigu: isSet=true mais valeur=0.0
+            // Pour être sûr, on vérifie si c'est vraiment défini ou juste la valeur par défaut
+            // On utilise une valeur sentinelle pour indiquer "non défini"
+            l.setAnnualRevenue(-1.0);
+        } else {
+            // Champ non défini (isSetAnnualRevenue() = false)
+            // Utiliser une valeur sentinelle pour indiquer "non défini"
+            l.setAnnualRevenue(-1.0);
+        }
         l.setPhone(dto.getPhone());
         l.setStreet(dto.getStreet());
         l.setPostalCode(dto.getPostalCode());

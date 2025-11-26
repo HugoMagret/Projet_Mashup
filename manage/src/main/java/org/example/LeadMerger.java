@@ -42,12 +42,25 @@ public class LeadMerger {
         System.out.println("Leads Salesforce à importer : " + sfLeads.size());
 
         int created = 0;
+        int failed = 0;
         for (InternalLeadDTO lead : sfLeads) {
-            internalClient.createLead(lead);
-            created++;
+            try {
+                long id = internalClient.createLead(lead);
+                created++;
+                if (created % 5 == 0) {
+                    System.out.println("  Progression : " + created + "/" + sfLeads.size() + " leads créés...");
+                }
+            } catch (Exception e) {
+                failed++;
+                System.err.println("  ERREUR lors de la création du lead " + lead.getFirstName() + " " + lead.getLastName() + " : " + e.getMessage());
+                if (failed > 5) {
+                    System.err.println("  Trop d'erreurs, arrêt de l'import");
+                    break;
+                }
+            }
         }
 
-        System.out.println("Import terminé. Leads créés dans InternalCRM : " + created);
+        System.out.println("Import terminé. Leads créés : " + created + ", échecs : " + failed);
     }
 
     /**
@@ -75,7 +88,16 @@ public class LeadMerger {
      * Création d'un lead individuel (utile pour la commande 'add').
      */
     public long addLead(InternalLeadDTO lead) throws Exception {
-        return internalClient.createLead(lead);
+        try {
+            return internalClient.createLead(lead);
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la création du lead : " + e.getMessage());
+            if (e.getCause() instanceof java.net.SocketTimeoutException) {
+                System.err.println("  Le serveur InternalCRM n'a pas répondu dans les temps.");
+                System.err.println("  Vérifiez que le serveur est bien démarré et fonctionne correctement.");
+            }
+            throw e;
+        }
     }
 
     /**
@@ -83,7 +105,16 @@ public class LeadMerger {
      * On utilise le matching exact de InternalCRM (equalsWithoutId côté modèle).
      */
     public void deleteLead(InternalLeadDTO template) throws Exception {
-        internalClient.deleteLead(template);
+        try {
+            internalClient.deleteLead(template);
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la suppression du lead : " + e.getMessage());
+            if (e.getCause() instanceof java.net.SocketTimeoutException) {
+                System.err.println("  Le serveur InternalCRM n'a pas répondu dans les temps.");
+                System.err.println("  Vérifiez que le serveur est bien démarré et fonctionne correctement.");
+            }
+            throw e;
+        }
     }
 }
 

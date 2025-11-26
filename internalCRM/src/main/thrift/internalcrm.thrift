@@ -26,7 +26,7 @@ service InternalCRM {
   i64 createLead(1: InternalLeadDTO lead),
   
   // Suppression d'un prospect par template (correspondance exacte)
-  void deleteLead(1: InternalLeadDTO leadDto)
+  void deleteLead(1: InternalLeadDTO leadDto) throws (1: ThriftNoSuchLeadException e)
 }
 
 // Exceptions métier
