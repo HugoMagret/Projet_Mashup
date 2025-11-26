@@ -25,14 +25,35 @@ repositories {
 }
 
 dependencies {
-    implementation project(':internalCRM')
+    implementation (project(':internalCRM')) {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
+
     implementation project(':geolocation')
     implementation project(':salesforce')
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'ch.qos.logback:logback-classic:1.4.11'
+
     implementation ('org.apache.thrift:libthrift:0.17.0') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+
+
+/* Ceci constitue les vestiges de l'application qui devait se lancer avec la commande « ./gradlew farmRun »,
+ * mais nous avons rencontré de nombreux problèmes qui semblent être liés à une incompatibilité entre
+ * Spring Boot et Gretty ensemble donc nous utilisons SpringBoot pour le VirtualCRM même si ce n'est
+ * peut être pas le plus optimal.
+ */
+/*
+farm {
+    webapp project
+}
+*/
+
+springBoot {
+    mainClass = 'org.example.VirtualCRMApplication'
 }

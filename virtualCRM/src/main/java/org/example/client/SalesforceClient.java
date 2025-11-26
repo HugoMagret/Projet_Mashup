@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-@Component
 public class SalesforceClient {
 
     private final SalesforceConnector connector;

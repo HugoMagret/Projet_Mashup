@@ -6,3 +6,5 @@ include 'internalCRM'
 include 'geolocation'
 include 'virtualCRM:src:test:java'
 include 'salesforce'
+
+include 'manage'

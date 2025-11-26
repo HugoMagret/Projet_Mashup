@@ -5,10 +5,13 @@ import org.example.geolocalisation.ServiceGeolocalisation;
 import org.example.dto.GeographicPointDTO;
 import org.springframework.stereotype.Component;
 
-@Component
 public class GeoClient {
 
-    private final ServiceGeolocalisation client = new ServiceGeolocalisation();
+    private final ServiceGeolocalisation client;
+
+    GeoClient() {
+        this.client = new ServiceGeolocalisation();
+    }
 
     public GeographicPointDTO geocode(String address) {
         return client.geolocaliserAdresse(address)

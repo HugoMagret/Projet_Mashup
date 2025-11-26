@@ -17,7 +17,7 @@ public class InternalCRMClient {
     private final InternalCRM.Client client;
     private final TTransport transport;
 
-    public InternalCRMClient(String host, int port) throws Exception {
+    InternalCRMClient(String host, int port) throws Exception {
         this.transport = new TSocket(host, port);
         transport.open();
         TProtocol protocol = new TBinaryProtocol(transport);
