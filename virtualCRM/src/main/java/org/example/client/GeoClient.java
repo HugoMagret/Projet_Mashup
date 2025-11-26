@@ -17,8 +17,8 @@ public class GeoClient {
         return client.geolocaliserAdresse(address)
                 .map(p -> {
                     GeographicPointDTO dto = new GeographicPointDTO();
-                    dto.setLatitude(p.getLatitude());
-                    dto.setLongitude(p.getLongitude());
+                    dto.setLatitude(p.latitude());
+                    dto.setLongitude(p.longitude());
                     return dto;
                 })
                 .orElse(null);

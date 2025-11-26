@@ -1,6 +1,5 @@
 package org.example.service;
 
-
 import org.example.client.GeoClient;
 import org.example.client.InternalCRMClient;
 import org.example.client.SalesforceClient;
@@ -22,7 +21,6 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
     private final InternalCRMClient internalCRMClient;
     private final SalesforceClient salesforceClient;
     private final GeoClient geoClient;
-
 
 
     @Autowired
@@ -76,7 +74,6 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
                 .sorted(Comparator.comparing(VirtualLeadDTO::getCreationDate).reversed())
                 .collect(Collectors.toList());
     }
-
 
     private void enrichWithGeoAndSort(List<VirtualLeadDTO> leads) {
         for (VirtualLeadDTO lead : leads) {

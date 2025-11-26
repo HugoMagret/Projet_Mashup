@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task runDemo(type: JavaExec) {
+    group = 'application'
+    description = 'Exécute la démo Salesforce'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.example.SalesforceDemo'
+}
+
+// Tâche pour récupérer les données depuis Salesforce (basée sur retrieve.sh)
+task retrieveData(type: JavaExec) {
+    group = 'application'
+    description = 'Récupère les données (Leads) depuis Salesforce via l\'API'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.example.SalesforceDataRetriever'
+}
