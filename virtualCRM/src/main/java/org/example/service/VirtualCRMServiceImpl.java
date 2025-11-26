@@ -36,9 +36,12 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
     public List<VirtualLeadDTO> findLeads(double minRevenue, double maxRevenue, String province) {
 
         // Get leads "InternalCRM"
-        List<VirtualLeadDTO> allLeads = internalCRMClient.findLeads(minRevenue, maxRevenue, province);
+        List<VirtualLeadDTO> internalLeads = internalCRMClient.findLeads(minRevenue, maxRevenue, province);
         // Get leads "Salesforce"
-        allLeads.addAll(salesforceClient.findLeads(minRevenue, maxRevenue, province));
+        List<VirtualLeadDTO> salesforceLeads = salesforceClient.findLeads(minRevenue, maxRevenue, province);
+        // Fusionner les deux listes
+        List<VirtualLeadDTO> allLeads = new ArrayList<>(internalLeads);
+        allLeads.addAll(salesforceLeads);
 
         // Applique la convertion de l'adresse réel en coordonées.
         // A savoir que le serveur public Nominatim ne permet pas de faire plus d'une requête

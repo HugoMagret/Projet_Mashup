@@ -32,4 +32,40 @@ public class LeadMapper {
 
         return virtual;
     }
+
+    /**
+     * Convertit un SalesforceLeadDTO en VirtualLeadDTO
+     */
+    public static VirtualLeadDTO toVirtualLead(org.example.SalesforceLeadDTO salesforce) {
+        VirtualLeadDTO virtual = new VirtualLeadDTO();
+
+        // Informations personnelles
+        virtual.setFirstName(salesforce.getFirstName() != null ? salesforce.getFirstName() : "");
+        virtual.setLastName(salesforce.getLastName() != null ? salesforce.getLastName() : "");
+
+        // Entreprise
+        virtual.setCompanyName(salesforce.getCompany() != null ? salesforce.getCompany() : "");
+
+        // Revenus (null-safe)
+        if (salesforce.getAnnualRevenue() != null) {
+            virtual.setAnnualRevenue(salesforce.getAnnualRevenue());
+        } else {
+            virtual.setAnnualRevenue(0.0);
+        }
+
+        // Contact
+        virtual.setPhone(salesforce.getPhone() != null ? salesforce.getPhone() : "");
+
+        // Adresse
+        virtual.setStreet(salesforce.getStreet() != null ? salesforce.getStreet() : "");
+        virtual.setPostalCode(salesforce.getPostalCode() != null ? salesforce.getPostalCode() : "");
+        virtual.setCity(salesforce.getCity() != null ? salesforce.getCity() : "");
+        virtual.setState(salesforce.getState() != null ? salesforce.getState() : "");
+        virtual.setCountry(salesforce.getCountry() != null ? salesforce.getCountry() : "");
+
+        // Date de création
+        virtual.setCreationDate(salesforce.getCreatedDate() != null ? salesforce.getCreatedDate() : "");
+
+        return virtual;
+    }
 }
