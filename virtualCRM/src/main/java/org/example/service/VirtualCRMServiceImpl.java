@@ -69,7 +69,13 @@ public class VirtualCRMServiceImpl implements VirtualCRMService {
         enrichWithGeoAndSort(allLeads);
         return allLeads.stream()
                 .filter(lead -> {
-                    OffsetDateTime created = OffsetDateTime.parse(lead.getCreationDate());
+                    String dateStr = lead.getCreationDate();
+                    // Gère compatibilité ISO-8601 avec le format Salesforce
+                    if (dateStr != null && dateStr.endsWith("+0000")) {
+                        dateStr = dateStr.substring(0, dateStr.length() - 2) + ":" + dateStr.substring(dateStr.length() - 2);
+                    }
+
+                    OffsetDateTime created = OffsetDateTime.parse(dateStr);
                     return (created.isEqual(from) || created.isAfter(from))
                             && (created.isEqual(to) || created.isBefore(to));
                 })
