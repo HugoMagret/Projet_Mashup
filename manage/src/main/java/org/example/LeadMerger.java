@@ -42,12 +42,25 @@ public class LeadMerger {
         System.out.println("Leads Salesforce à importer : " + sfLeads.size());
 
         int created = 0;
+        int failed = 0;
         for (InternalLeadDTO lead : sfLeads) {
-            internalClient.createLead(lead);
-            created++;
+            try {
+                long id = internalClient.createLead(lead);
+                created++;
+                if (created % 5 == 0) {
+                    System.out.println("  Progression : " + created + "/" + sfLeads.size() + " leads créés...");
+                }
+            } catch (Exception e) {
+                failed++;
+                System.err.println("  ERREUR lors de la création du lead " + lead.getFirstName() + " " + lead.getLastName() + " : " + e.getMessage());
+                if (failed > 5) {
+                    System.err.println("  Trop d'erreurs, arrêt de l'import");
+                    break;
+                }
+            }
         }
 
-        System.out.println("Import terminé. Leads créés dans InternalCRM : " + created);
+        System.out.println("Import terminé. Leads créés : " + created + ", échecs : " + failed);
     }
 
     /**

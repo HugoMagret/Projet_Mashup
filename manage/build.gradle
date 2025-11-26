@@ -9,15 +9,16 @@ repositories {
 dependencies {
     // Pour utiliser InternalCRM, InternalLeadDTO, etc.
     implementation project(':internalCRM')
+    implementation project(':salesforce')
 
-    // Même version de Thrift que dans internalCRM (adapte si besoin)
+    
     implementation 'org.apache.thrift:libthrift:0.20.0'
 
-    // Si tu veux plus tard appeler Salesforce en REST depuis ce module
+
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3'
 }
 
 application {
-    mainClass = 'org.example.manage.LeadMergerApp'
+    mainClass = 'org.example.LeadMergerApp'
 }

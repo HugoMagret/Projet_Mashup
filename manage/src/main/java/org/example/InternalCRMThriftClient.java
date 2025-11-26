@@ -27,8 +27,20 @@ public class InternalCRMThriftClient implements Closeable {
     private final InternalCRM.Client client;
 
     public InternalCRMThriftClient(String host, int port) throws Exception {
-        this.transport = new TSocket(host, port);
-        this.transport.open();
+        System.out.println("[InternalCRMThriftClient] Connexion au serveur InternalCRM sur " + host + ":" + port + "...");
+        TSocket socket = new TSocket(host, port);
+        // Configurer un timeout de 10 secondes pour éviter les blocages infinis
+        socket.setTimeout(10000);
+        this.transport = socket;
+        try {
+            this.transport.open();
+            System.out.println("[InternalCRMThriftClient] Connexion établie avec succès");
+        } catch (Exception e) {
+            System.err.println("[InternalCRMThriftClient] ERREUR : Impossible de se connecter au serveur InternalCRM");
+            System.err.println("  Vérifiez que le serveur est démarré : ./gradlew startAllServers");
+            System.err.println("  Ou démarrez uniquement InternalCRM : ./gradlew :internalCRM:runInternalCRMServer");
+            throw new Exception("Connexion échouée au serveur InternalCRM sur " + host + ":" + port + ". " + e.getMessage(), e);
+        }
         TProtocol protocol = new TBinaryProtocol(transport);
         this.client = new InternalCRM.Client(protocol);
     }
