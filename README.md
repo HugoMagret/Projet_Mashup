@@ -545,3 +545,208 @@ git rebase origin/main
 
 # pousser et ouvrir PR
 git push --set-upstream origin feat/ajout-auth
+
+
+
+
+
+
+
+DIAGRAMMES UML
+```mermaid
+---
+config:
+  layout: elk
+---
+classDiagram
+    class VirtualCRMService {
+        <<interface>>
+    }
+
+    class VirtualCRMServiceImpl {
+        +findLeads(...)
+    }
+    class ClientFactory {
+        <<Factory>>
+        +createInternalCRMClient()
+        +createSalesforceClient()
+        +createGeoClient()
+    }
+
+    class InternalCRMClient {
+    }
+
+    class SalesforceClient {
+    }
+
+    class GeoClient {
+    }
+    class LeadMapper {
+        <<Utility>>
+        +toVirtualLead()
+    }
+    
+    class VirtualLeadDTO {
+        <<Data Transfer Object>>
+    }
+    class InternalCRM_Client {
+        <<Thrift Generated>>
+    }
+    
+    class SalesforceConnector {
+        <<External Lib>>
+    }
+
+    class ServiceGeolocalisation {
+        <<External Lib>>
+    }
+    VirtualCRMService <|.. VirtualCRMServiceImpl : Implements
+    VirtualCRMServiceImpl --> InternalCRMClient : Uses
+    VirtualCRMServiceImpl --> SalesforceClient : Uses
+    VirtualCRMServiceImpl --> GeoClient : Uses
+    ClientFactory ..> InternalCRMClient : Creates
+    ClientFactory ..> SalesforceClient : Creates
+    ClientFactory ..> GeoClient : Creates
+    InternalCRMClient --> InternalCRM_Client : Delegates (RPC)
+    InternalCRMClient ..> LeadMapper : Uses (Mapping)
+    SalesforceClient ..> LeadMapper : Uses (Mapping)
+
+    SalesforceClient --> SalesforceConnector : Uses (REST)
+    
+    GeoClient --> ServiceGeolocalisation : Uses (API)
+    InternalCRMClient ..> VirtualLeadDTO : Produces
+    SalesforceClient ..> VirtualLeadDTO : Produces
+    LeadMapper ..> VirtualLeadDTO : Creates
+
+
+class VirtualCRMService {
+        <<interface>>
+    }
+    VirtualCRMService <|.. VirtualCRMServiceImpl
+```
+
+
+
+
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Client as ClientApp
+    participant Service as VirtualCRMServiceImpl
+    participant Factory as ClientFactory
+    participant IntClient as InternalCRMClient
+    participant SFClient as SalesforceClient
+    participant Mapper as LeadMapper
+    participant Geo as GeoClient
+
+    Note over Client, Service: Exécution de la requête findLeads
+    Client->>Service: findLeads(minRev, maxRev, state)
+
+    Note over Service : Recherche des leads 
+    par Recherche InternalCRM
+        Service->>IntClient: findLeads(min, max, state)
+        IntClient->>IntClient: Appel RPC Thrift (Delegate)
+        IntClient->>Mapper: toVirtualLead(InternalLeadDTO)
+        Mapper-->>IntClient: VirtualLeadDTO
+        IntClient-->>Service: List<VirtualLeadDTO>
+    and Recherche Salesforce
+        Service->>SFClient: findLeads(min, max, state)
+        SFClient->>SFClient: Appel REST (Connector)
+        SFClient->>Mapper: toVirtualLead(SalesforceLeadDTO)
+        Mapper-->>SFClient: VirtualLeadDTO
+        SFClient-->>Service: List<VirtualLeadDTO>
+    end
+
+    Note over Service: Recherche des coordonées
+
+    loop Pour chaque Lead (Enrichissement)
+        Service->>Geo: geocode(address)
+        Geo-->>Service: GeographicPointDTO (ou null)
+    end
+
+    Service->>Service: Trier par Revenu
+    Service-->>Client: List<VirtualLeadDTO>
+
+```
+
+
+
+```mermaid
+
+sequenceDiagram
+    autonumber
+    participant Main as LeadMergerApp
+    participant Merger as LeadMerger
+    participant SFClient as SalesforceCRMClient
+    participant IntClient as InternalCRMClient
+
+    Main->>Merger: mergeLeads()
+    
+    Merger->>SFClient: retrieveAllLeads()
+    SFClient-->>Merger: List<SalesforceLeadDTO>
+
+    loop Pour chaque Lead Salesforce
+        Merger->>Merger: Convertir SalesforceLead -> InternalLeadDTO
+        Merger->>IntClient: addLead(InternalLeadDTO)
+    end
+
+    Merger-->>Main: Fin du traitement
+
+```
+
+
+```mermaid
+
+classDiagram
+    %% Interface du Service
+    class VirtualCRMService {
+        <<interface>>
+        +findLeads(lowAnnualRevenue: double, highAnnualRevenue: double, state: String) List~VirtualLeadDTO~
+        +findLeadsByDate(startDate: String, endDate: String) List~VirtualLeadDTO~
+    }
+
+    %% Data Transfer Objects
+    class VirtualLeadDTO {
+        -String firstName
+        -String lastName
+        -Double annualRevenue
+        -String phone
+        -String street
+        -String postalCode
+        -String city
+        -String state
+        -String country
+        -String creationDate
+        -GeographicPointDTO geographicPoint
+        +getFullAdress() String
+    }
+
+    class GeographicPointDTO {
+        -Double latitude
+        -Double longitude
+    }
+
+    class InternalLeadDTO {
+        <<Thrift Generated>>
+        +String firstName
+        +String lastName
+        +double annualRevenue
+        +String phone
+        +String street
+        +String postalCode
+        +String city
+        +String country
+        +String creationDate
+        +String companyName
+        +String state
+    }
+
+    %% Relations
+    VirtualCRMService ..> VirtualLeadDTO : Returns
+    VirtualLeadDTO *-- GeographicPointDTO : Composition (0..1)
+    
+    %% Note explicative
+    note for VirtualLeadDTO "Agrège les données venant\nde InternalCRM et Salesforce"
+
+```
