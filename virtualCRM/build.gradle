@@ -57,3 +57,7 @@ farm {
 springBoot {
     mainClass = 'org.example.VirtualCRMApplication'
 }
+
+bootJar {
+    enabled = false
+}
