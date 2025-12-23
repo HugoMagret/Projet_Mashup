@@ -3,3 +3,8 @@ rootProject.name = 'Projet_Mashup'
 include 'Client'
 include 'virtualCRM'
 include 'internalCRM'
+include 'geolocation'
+include 'virtualCRM:src:test:java'
+include 'salesforce'
+
+include 'manage'

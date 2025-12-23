@@ -1,0 +1,29 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Pour utiliser InternalCRM, InternalLeadDTO, etc.
+    implementation project(':internalCRM')
+    implementation project(':salesforce')
+
+    
+    implementation 'org.apache.thrift:libthrift:0.20.0'
+
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3'
+}
+
+application {
+    mainClass = 'org.example.LeadMergerApp'
+}
+
+// Permettre l'interaction avec le terminal pour les commandes add/delete
+run {
+    standardInput = System.in
+}

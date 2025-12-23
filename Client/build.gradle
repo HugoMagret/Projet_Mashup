@@ -1,4 +1,6 @@
 plugins {
+    id 'java'
+    id "com.gradleup.shadow" version "8.3.2"
     id 'application'
 }
 
@@ -13,4 +15,15 @@ dependencies {
 
 application {
     mainClass = 'org.example.client.ClientApp'
+}
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.example.client.ClientApp'
+    }
+}
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': 'org.example.client.ClientApp'
+    }
 }

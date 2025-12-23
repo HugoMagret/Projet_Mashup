@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'org.gretty' version '4.1.4'
 }
 
 group = 'org.example'
@@ -9,13 +10,62 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    implementation('org.apache.thrift:libthrift:0.16.0')
+subprojects {
+    apply plugin: 'java'
+
+    group = 'org.example'
+    version = '1.0-SNAPSHOT'
+
+    java {
+        sourceCompatibility = '17'
+        targetCompatibility = '17'
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testImplementation platform('org.junit:junit-bom:5.10.0')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    test {
+        useJUnitPlatform()
+    }
 }
 
-test {
-    useJUnitPlatform()
+/**
+ * Gretty sur les deux webapps : virtualCRM + internalCRM
+ * ils seront automatiquement ajoutés dans la farm par défaut.
+ */
+configure([/*project(':virtualCRM'),*/ project(':internalCRM')]) {
+    apply plugin: 'org.gretty'
 }
+
+/**
+ * Déclaration de la farm Gretty au niveau racine.
+ * C’est elle qui crée les tâches farmRun / farmStart / farmStop.
+ */
+farm {
+    webapp project(':virtualCRM')
+    webapp project(':internalCRM')
+}
+
+/**
+ * Config commune pour le serveur Gretty (farmRun, etc.)
+ */
+gretty {
+    // Port par défaut, surchargeable avec -PhttpPort=9090
+    httpPort = project.hasProperty('httpPort') ? project.httpPort as int : 8080
+    contextPath = '/'
+}
+
+/**
+ * On veut que "farmRun" commence seulement après la création du jar du client
+ */
+tasks.matching { it.name == 'farmRun' }.configureEach {
+    dependsOn ':Client:shadowJar'
+}
+
